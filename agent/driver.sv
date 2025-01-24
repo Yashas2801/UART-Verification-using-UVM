@@ -13,4 +13,5 @@ endfunction
 
 function void UART_driver::build_phase(uvm_phase phase);
   super.build_phase(phase);
+  `uvm_info(get_type_name, "In build_phase of driver", UVM_LOW)
 endfunction

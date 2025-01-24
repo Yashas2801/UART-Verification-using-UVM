@@ -1,6 +1,7 @@
-class UART_monitor extends uvm_monitor #(UART_xtn);
+class UART_monitor extends uvm_monitor;
 
   `uvm_component_utils(UART_monitor)
+
   virtual UART_interface vif;
 
   extern function new(string name, uvm_component parent);
@@ -13,4 +14,5 @@ endfunction
 
 function void UART_monitor::build_phase(uvm_phase phase);
   super.build_phase(phase);
+  `uvm_info(get_type_name, "In the build phase of monitor", UVM_LOW)
 endfunction

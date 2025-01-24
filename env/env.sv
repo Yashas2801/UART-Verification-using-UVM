@@ -17,7 +17,7 @@ function void UART_env::build_phase(uvm_phase phase);
   super.build_phase(phase);
   `uvm_info(get_type_name, "In the build_phase of env", UVM_LOW)
 
-  if (!uvm_config_db#(env_config)::get(this, "", "e_cfg", e_cfg))
+  if (!uvm_config_db#(env_config)::get(this, "", "env_config", e_cfg))
     `uvm_fatal(get_type_name, "Failed to get e_cfg in env")
 
   agth = new[e_cfg.no_of_agents];
