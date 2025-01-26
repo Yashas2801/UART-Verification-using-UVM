@@ -4,7 +4,7 @@ SIMULATOR = Questa
 
 
 
-#RTL= ../rtl/*
+RTL= ../rtl/*
 work= work #library name
 SVTB1= ../top/top.sv
 INC = +incdir+../top +incdir+../test +incdir+../agent +incdir+../env
