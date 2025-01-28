@@ -1,3 +1,4 @@
+`timescale 1ns / 10ps
 package UART_pkg;
 
   import uvm_pkg::*;
