@@ -8,6 +8,9 @@ class virtual_seqs_base extends uvm_sequence #(uvm_sequence_item);
 
   UART_sequence_base seqh[];
 
+  full_duplex_seq1 fd_seq1;
+  full_duplex_seq2 fd_seq2;
+
   extern function new(string name = "virtual_seqs_base");
   extern task body;
 endclass
@@ -17,8 +20,6 @@ function virtual_seqs_base::new(string name = "virtual_seqs_base");
 endfunction
 
 task virtual_seqs_base::body;
-  `uvm_info(get_type_name, "In the task body of base v_seqs", UVM_LOW)
-
   if (!uvm_config_db#(env_config)::get(null, get_full_name(), "env_config", e_cfg))
     `uvm_fatal(get_type_name, "failed to get e_cfg in v_seqs")
 
@@ -45,5 +46,10 @@ endfunction
 task full_duplex_vseq::body;
   super.body();
   `uvm_info(get_type_name, "In the body of full_duplex", UVM_LOW)
-
+  fd_seq1 = full_duplex_seq1::type_id::create("fd_seq1");
+  fd_seq2 = full_duplex_seq2::type_id::create("fd_seq2");
+  fork
+    fd_seq1.start(seqrh[0]);
+    fd_seq2.start(seqrh[1]);
+  join
 endtask

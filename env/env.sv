@@ -6,6 +6,8 @@ class UART_env extends uvm_env;
   UART_agent agth[];
   virtual_sequencer vseqrh;
 
+  uart_scoreboard sb;
+
   extern function new(string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
   extern function void connect_phase(uvm_phase phase);
@@ -31,8 +33,12 @@ function void UART_env::build_phase(uvm_phase phase);
     uvm_config_db#(agent_config)::set(this, $sformatf("agth[%0d]*", i), "agent_config",
                                       e_cfg.a_cfg[i]);
   end
+  if (e_cfg.has_virtual_sequencer) begin
+    vseqrh = virtual_sequencer::type_id::create("vseqrh", this);
+  end
 
-  vseqrh = virtual_sequencer::type_id::create("vseqrh", this);
+  sb = uart_scoreboard::type_id::create("sb", this);
+
 endfunction
 
 
@@ -42,5 +48,7 @@ function void UART_env::connect_phase(uvm_phase phase);
 
   for (int i = 0; i < e_cfg.no_of_agents; i++) begin
     vseqrh.seqrh[i] = agth[i].seqrh;
+    agth[i].monh.ana_port.connect(sb.fifo_wrh[i].analysis_export);
   end
+
 endfunction

@@ -21,7 +21,7 @@ function void UART_agent::build_phase(uvm_phase phase);
   `uvm_info(get_type_name, "In the build_phase of agent", UVM_LOW)
 
   if (!uvm_config_db#(agent_config)::get(this, "", "agent_config", a_cfg))
-    `uvm_fatal(get_type_name, "Failed to get a_cfg in agent")
+    `uvm_fatal(get_type_name, "Failed to get e_cfg in agent")
 
   monh = UART_monitor::type_id::create("monh", this);
 
@@ -34,6 +34,7 @@ endfunction
 function void UART_agent::connect_phase(uvm_phase phase);
   super.connect_phase(phase);
   `uvm_info(get_type_name, "In the connect_phase of agent", UVM_LOW)
+  drvh.seq_item_port.connect(seqrh.seq_item_export);
 endfunction
 
 

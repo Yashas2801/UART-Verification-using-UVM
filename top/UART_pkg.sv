@@ -17,6 +17,7 @@ package UART_pkg;
 
   `include "virtual_sequencer.sv"
   `include "virtual_sequence.sv"
+  `include "scoreboard.sv"
 
   `include "env.sv"
   `include "test.sv"
