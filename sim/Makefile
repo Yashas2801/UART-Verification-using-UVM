@@ -3,7 +3,7 @@
 SIMULATOR = Questa
 
 
-
+SEED_NO= 579432340
 RTL= ../rtl/*
 work= work #library name
 SVTB1= ../top/top.sv
@@ -25,14 +25,14 @@ help:
 	@echo "! sv_cmp    	=>  Create library and compile the code.           						!"
 	@echo "! run_test	=>  clean, compile & run the simulation for base_test in batch mode.		!" 
 	@echo "! run_test1	=>  clean, compile & run the simulation for full_duplex_test in batch mode.			!" 
-	@echo "! run_test2	=>  clean, compile & run the simulation for medium_test in batch mode.			!"
-	@echo "! run_test3	=>  clean, compile & run the simulation for large_test in batch mode.			!" 
-	@echo "! run_test4	=>  clean, compile & run the simulation for large_less in batch mode.			!"  
+	@echo "! run_test2	=>  clean, compile & run the simulation for half_duplex_test in batch mode.			!"
+	@echo "! run_test3	=>  clean, compile & run the simulation for loopback_test in batch mode.			!" 
+	@echo "! run_test4	=>  clean, compile & run the simulation for parity_error_test	!"  
 	@echo "! view_wave1 =>  To view the waveform of base_test	    						!" 
-	@echo "! view_wave2 =>  To view the waveform of short_test	    						!" 
-	@echo "! view_wave3 =>  To view the waveform of medium_test 	  						!" 
-	@echo "! view_wave4 =>  To view the waveform of large_test    							!" 
-	@echo "! view_wave5 =>  To view the waveform of large_less    							!" 
+	@echo "! view_wave2 =>  To view the waveform of full_duplex_test	    						!" 
+	@echo "! view_wave3 =>  To view the waveform of half_duplex_test 						!" 
+	@echo "! view_wave4 =>  To view the waveform of loopback_test   							!" 
+	@echo "! view_wave5 =>  To view the waveform of parity_error_test    							!" 
 	@echo "! regress    =>  clean, compile and run all testcases in batch mode.		    				!"
 	@echo "! report     =>  To merge coverage reports for all testcases and  convert to html format.			!"
 	@echo "! cov        =>  To open merged coverage report in html format.							!"
@@ -70,15 +70,15 @@ run_test1_Questa:sv_cmp
 	vcover report  -cvg  -details -nocompactcrossbins -codeAll -assert -directive -html mem_cov2
 	
 run_test2_Questa:sv_cmp
-	vsim -cvgperinstance $(VSIMOPT) $(VSIMCOV) $(VSIMBATCH3) $(VERBOSITY) -wlf wave_file3.wlf -l test3.log  -sv_seed random  work.top +UVM_TESTNAME=medium_test
+	vsim -cvgperinstance $(VSIMOPT) $(VSIMCOV) $(VSIMBATCH3) $(VERBOSITY) -wlf wave_file3.wlf -l test3.log  -sv_seed random  work.top +UVM_TESTNAME=half_duplex_test
 	vcover report  -cvg  -details -nocompactcrossbins -codeAll -assert -directive -html mem_cov3
 	
 run_test3_Questa:sv_cmp
-	vsim -cvgperinstance $(VSIMOPT) $(VSIMCOV) $(VSIMBATCH4) $(VERBOSITY) -wlf wave_file4.wlf -l test4.log  -sv_seed random  work.top +UVM_TESTNAME=large_test
+	vsim -cvgperinstance $(VSIMOPT) $(VSIMCOV) $(VSIMBATCH4) $(VERBOSITY) -wlf wave_file4.wlf -l test4.log  -sv_seed random  work.top +UVM_TESTNAME=loopback_test
 	vcover report  -cvg  -details -nocompactcrossbins -codeAll -assert -directive -html mem_cov4
  
 run_test4_Questa:sv_cmp
-	vsim -cvgperinstance $(VSIMOPT) $(VSIMCOV) $(VSIMBATCH5) $(VERBOSITY) -wlf wave_file5.wlf -l test5.log  -sv_seed random  work.top +UVM_TESTNAME=large_xtn_small_delay_test 
+	vsim -cvgperinstance $(VSIMOPT) $(VSIMCOV) $(VSIMBATCH5) $(VERBOSITY) -wlf wave_file5.wlf -l test5.log  -sv_seed $(SEED_NO) work.top +UVM_TESTNAME=parity_error_test
 	vcover report  -cvg  -details -nocompactcrossbins -codeAll -assert -directive -html mem_cov5
  
 view_wave1_Questa:

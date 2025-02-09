@@ -8,7 +8,7 @@ class uart_scoreboard extends uvm_scoreboard;
   // Covergroup for Functional Coverage
   covergroup uart_coverage;
     addr_cp: coverpoint wr_data1.wb_addr_i {
-      bins control_regs[] = {0, 1, 2, 3};  // DLR, LCR, FCR, IER, THR
+      bins control_regs[] = {0, 1, 2, 3, 4};  // DLR, LCR, FCR, IER, THR,MCR
     }
 
     write_enable_cp: coverpoint wr_data1.wb_we_i {bins enabled = {1}; bins disabled = {0};}
@@ -63,12 +63,45 @@ task uart_scoreboard::run_phase(uvm_phase phase);
 endtask
 
 function void uart_scoreboard::check_phase(uvm_phase phase);
-  `uvm_info("UART_SCOREBOARD", "Final Check for Full-Duplex Mode", UVM_MEDIUM)
+  if (m_cfg.is_fd) begin
 
-  if ((wr_data1.thr[0] == wr_data2.rb[0]) && (wr_data2.thr[0] == wr_data1.rb[0])) begin
-    `uvm_info("FULL_DUPLEX", "Final Check: Full-Duplex Data Match Successful", UVM_MEDIUM)
-  end else begin
-    `uvm_error("FULL_DUPLEX", "Final Check: Data Mismatch in Full-Duplex Mode")
+    `uvm_info("UART_SCOREBOARD", "Final Check for Full-Duplex Mode", UVM_MEDIUM)
+    if ((wr_data1.thr[0] == wr_data2.rb[0]) && (wr_data2.thr[0] == wr_data1.rb[0])) begin
+      `uvm_info("FULL_DUPLEX", "Final Check: Full-Duplex Data Match Successful", UVM_MEDIUM)
+    end else begin
+      `uvm_error("FULL_DUPLEX", "Final Check: Data Mismatch in Full-Duplex Mode")
+    end
+
+  end else if (m_cfg.is_hd) begin
+    `uvm_info("UART_SCOREBOARD", "Final Check for Half-Duplex Mode", UVM_MEDIUM)
+    if (wr_data1.thr[0] == wr_data2.rb[0]) begin
+      `uvm_info("HALF_DUPLEX", "Final Check: Half-Duplex Data Match Successful", UVM_MEDIUM)
+    end else begin
+      `uvm_error("HALF_DUPLEX", "Final Check: Data Mismatch in Half-Duplex Mode")
+    end
+  end else if (m_cfg.is_lb) begin
+    `uvm_info("UART_SCOREBOARD", "Final Check for Loopback Mode", UVM_MEDIUM)
+    // In loopback mode, each UART should receive its own transmitted data.
+    if ((wr_data1.thr[0] == wr_data1.rb[0]) && (wr_data2.thr[0] == wr_data2.rb[0])) begin
+      `uvm_info("LOOPBACK", "Final Check: Loopback Data Match Successful for both Uarts",
+                UVM_MEDIUM)
+    end else begin
+      `uvm_error("LOOPBACK", "Final Check: Data Mismatch in Loopback Mode")
+    end
+  end else if (m_cfg.is_pe) begin
+    `uvm_info("PARITY_CHECK", "Running Parity Error Check", UVM_MEDIUM)
+
+    if (wr_data1.lsr[2]) begin
+      `uvm_info("PARITY_CHECK", "UART1: Parity error detected as expected", UVM_MEDIUM)
+    end else begin
+      `uvm_error("PARITY_CHECK", "UART1: Expected parity error but none detected")
+    end
+
+    if (wr_data2.lsr[2]) begin
+      `uvm_info("PARITY_CHECK", "UART2: Parity error detected as expected", UVM_MEDIUM)
+    end else begin
+      `uvm_error("PARITY_CHECK", "UART2: Expected parity error but none detected")
+    end
   end
 endfunction
 

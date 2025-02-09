@@ -9,6 +9,11 @@ class env_config extends uvm_object;
   bit has_functional_coverage = 0;
   bit has_scoreboard = 1;
 
+  bit is_fd;
+  bit is_hd;
+  bit is_lb;
+  bit is_pe;
+
   bit has_virtual_sequencer = 1;
 
   agent_config a_cfg[];

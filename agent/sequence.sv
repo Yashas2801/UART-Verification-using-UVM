@@ -169,8 +169,7 @@ task full_duplex_seq1::body;
       //     end
     end
   end
-endtask
-
+endtask  //fd1endtask
 
 class full_duplex_seq2 extends UART_sequence_base;
   `uvm_object_utils(full_duplex_seq2)
@@ -217,7 +216,7 @@ task full_duplex_seq2::body;
     start_item(req);
     `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
     assert (req.randomize() with {
-      wb_addr_i == 0;  //#10clk DLR MSB = 325 = 16'b0000_0000_1010_0010
+      wb_addr_i == 0;  //#10clk DLR MSB = 162 = 16'b0000_0000_1010_0010
       wb_we_i == 1;
       wb_dat_i == 8'b1010_0010;
     });
@@ -303,6 +302,897 @@ task full_duplex_seq2::body;
       start_item(req);
       assert (req.randomize() with {
         wb_addr_i == 0;  //rb
+        wb_we_i == 0;  //read
+      });
+      `uvm_info(get_type_name, $sformatf("Printing from sequence: \n%s", req.sprint()), UVM_HIGH)
+      finish_item(req);
+      //     end
+    end
+  end
+endtask  //fd2endtask
+
+class half_duplex_seq1 extends UART_sequence_base;
+  `uvm_object_utils(half_duplex_seq1)
+  extern function new(string name = "half_duplex_seq1");
+  extern task body;
+  uvm_event hd_event;
+endclass
+
+function half_duplex_seq1::new(string name = "half_duplex_seq1");
+  super.new(name);
+  hd_event = new("hd_event");
+endfunction
+
+task half_duplex_seq1::body;
+  super.body;
+  begin
+    ///////////select the dlr via the lcr/////////////////////////////
+    req = UART_xtn::type_id::create("req");
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 3;
+      wb_we_i == 1;
+      wb_dat_i[7] == 1;  //NOTE: LCR is [7:0]
+    });
+    `uvm_info(get_type_name, "configuring LCR to load dlr", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+
+    /////////////////////////update the dlr msb with diviser/////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 1;  //#10clk DLR MSB = 325 = 16'b0000_0001_0100_0101
+      wb_we_i == 1;
+      wb_dat_i == 8'b0000_0001;
+    });
+    `uvm_info(get_type_name, "Loading DLR MSB", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+
+
+    /////////////////////////update the dlr lsb with diviser/////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 0;  //#10clk DLR MSB = 325 = 16'b0000_0001_0100_0101
+      wb_we_i == 1;
+      wb_dat_i == 8'b0100_0101;
+    });
+    `uvm_info(get_type_name, "Loading DLR LSB", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+
+    ///////////////////////configure lcr///////////////////////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 3;  //lcr
+      wb_we_i == 1;
+      wb_dat_i == 8'b0000_0011;  //no parity,8bit,1stop bit
+    });
+    `uvm_info(get_type_name, "Configuring LCR to default mode", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+
+    ////////////////////////configure fcr//////////////////////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 2;  //fcr
+      wb_we_i == 1;
+      wb_dat_i == 8'b0000_0110;  //trigger after 1 byte reception and clear fifo
+    });
+    `uvm_info(get_type_name, "Configuring fcr", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+
+    ////////////////////configure ier///////////////////////////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 1;  //ier
+      wb_we_i == 1;
+      wb_dat_i == 8'b0000_0001;  //enable the rcvr buffer intrupt
+    });
+    `uvm_info(get_type_name, "configuring ier", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW);
+
+    //////////////////////////////write via thr//////////////////////////
+    //    repeat (10) begin
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 0;  //thr
+      wb_we_i == 1;
+      wb_dat_i == e_cfg.i1;  // setting the data in test via e_cfg
+    });
+    `uvm_info(get_type_name, "Loading the data to thr", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+    //   end
+
+    //////////////////////////read iir/////////////////////////////////
+    //NOTE: Why is this sequence disabled?
+    //
+    /*NOTE:
+      The sequence block for reading the IIR
+      is commented out. The driver's IIR read
+      logic is not triggered in half-duplex.
+      The if condition (wb_addr_i == 2 &&
+      wb_we_i == 0) never evaluates as true.
+      Thus, the wait for int_o does not execute.
+      We rely on the driver's logic to handle IIR.
+    */
+    ///////////////////////////////////////////////////////////////////
+
+    /*   start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 2;  //iir
+      wb_we_i == 0;  //read
+    });
+    `uvm_info(get_type_name, "reading iir", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW);
+
+    //NOTE:get responce
+
+    get_response(req);
+
+    //Check the iir
+    if (req.iir[3:1] == 3'b010) begin
+      $display("The value of iir is %0b", req.iir);
+      // sending 10 data form other uart
+      //      repeat (10) begin
+      start_item(req);
+      assert (req.randomize() with {
+        wb_addr_i == 0;  //rb
+        wb_we_i == 0;  //read
+      });
+      `uvm_info(get_type_name, $sformatf("Printing from sequence: \n%s", req.sprint()), UVM_HIGH)
+      finish_item(req);
+      //     end
+    end
+    //hd_event.trigger;
+  */
+  end
+endtask  //hd1endtask
+
+class half_duplex_seq2 extends UART_sequence_base;
+  `uvm_object_utils(half_duplex_seq2)
+  extern function new(string name = "half_duplex_seq2");
+  extern task body;
+endclass
+
+function half_duplex_seq2::new(string name = "half_duplex_seq2");
+  super.new(name);
+endfunction
+
+task half_duplex_seq2::body;
+  super.body;
+  begin
+    ///////////select the dlr via the lcr/////////////////////////////
+    req = UART_xtn::type_id::create("req");
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 3;
+      wb_we_i == 1;
+      wb_dat_i[7] == 1;  //NOTE: LCR is [7:0]
+    });
+    `uvm_info(get_type_name, "configuring lcr to load dlr agth[1]", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+
+    /////////////////////////update the dlr msb with diviser/////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 1;  //#10clk DLR MSB = 162 = 16'b0000_0000_1010_0010
+      wb_we_i == 1;
+      wb_dat_i == 8'b0000_0000;
+    });
+    `uvm_info(get_type_name, "Loading dlr msb", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+
+
+    /////////////////////////update the dlr lsb with diviser/////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 0;  //#10clk DLR lsb =162  = 16'b0000_0000_1010_0010
+      wb_we_i == 1;
+      wb_dat_i == 8'b1010_0010;
+    });
+    `uvm_info(get_type_name, "Loading dlr lsb", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+
+    ///////////////////////configure lcr///////////////////////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 3;  //lcr
+      wb_we_i == 1;
+      wb_dat_i == 8'b0000_0011;  //no parity,8bit,1stop bit
+    });
+    `uvm_info(get_type_name, "configuring lcr to default mode", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+
+    ////////////////////////configure fcr//////////////////////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 2;  //fcr
+      wb_we_i == 1;
+      wb_dat_i == 8'b0000_0110;  //trigger after 1 byte reception and clear fifo
+    });
+    `uvm_info(get_type_name, "configuring fcr", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+
+    ////////////////////configure ier///////////////////////////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 1;  //ier
+      wb_we_i == 1;
+      wb_dat_i == 8'b0000_0001;  //enable the rcvr buffer intrupt
+    });
+    `uvm_info(get_type_name, "configuring ier", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW);
+
+    //////////////////////////////write via thr//////////////////////////
+    //  repeat (10) begin
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 0;  //thr
+      wb_we_i == 1;
+      wb_dat_i == e_cfg.i2;  // setting the data in test via e_cfg
+    });
+    `uvm_info(get_type_name, "writing data to thr", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+    // end
+
+    //////////////////////////read iir/////////////////////////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 2;  //iir
+      wb_we_i == 0;  //read
+    });
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW);
+
+    //NOTE:get responce
+
+    get_response(req);
+
+    //Check the iir
+    if (req.iir[3:1] == 3'b010) begin
+      $display("The value of iir is %0b", req.iir);
+      // sending 10 data form other uart
+      //      repeat (10) begin
+      start_item(req);
+      assert (req.randomize() with {
+        wb_addr_i == 0;  //rb
+        wb_we_i == 0;  //read
+      });
+      `uvm_info(get_type_name, $sformatf("Printing from sequence: \n%s", req.sprint()), UVM_HIGH)
+      finish_item(req);
+      //     end
+    end
+  end
+endtask  //hd2endtask
+
+class loopback_seq1 extends UART_sequence_base;
+  `uvm_object_utils(loopback_seq1)
+  extern function new(string name = "loopback_seq1");
+  extern task body;
+endclass
+
+function loopback_seq1::new(string name = "loopback_seq1");
+  super.new(name);
+endfunction
+
+task loopback_seq1::body;
+  super.body;
+  begin
+    ///////////select the dlr via the lcr/////////////////////////////
+    req = UART_xtn::type_id::create("req");
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 3;
+      wb_we_i == 1;
+      wb_dat_i[7] == 1;  //NOTE: LCR is [7:0]
+    });
+    `uvm_info(get_type_name, "configuring LCR to load dlr", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+
+    /////////////////////////update the dlr msb with diviser/////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 1;  //#10clk DLR MSB = 325 = 16'b0000_0001_0100_0101
+      wb_we_i == 1;
+      wb_dat_i == 8'b0000_0001;
+    });
+    `uvm_info(get_type_name, "Loading DLR MSB", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+
+
+    /////////////////////////update the dlr lsb with diviser/////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 0;  //#10clk DLR MSB = 325 = 16'b0000_0001_0100_0101
+      wb_we_i == 1;
+      wb_dat_i == 8'b0100_0101;
+    });
+    `uvm_info(get_type_name, "Loading DLR LSB", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+
+    ///////////////////////configure lcr///////////////////////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 3;  //lcr
+      wb_we_i == 1;
+      wb_dat_i == 8'b0000_0011;  //no parity,8bit,1stop bit
+    });
+    `uvm_info(get_type_name, "Configuring LCR to default mode", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+
+    ////////////////////////configure fcr//////////////////////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 2;  //fcr
+      wb_we_i == 1;
+      wb_dat_i == 8'b0000_0110;  //trigger after 1 byte reception and clear fifo
+    });
+    `uvm_info(get_type_name, "Configuring fcr", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+
+    ////////////////////configure mcr///////////////////////////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 4;  //mcr
+      wb_we_i == 1;
+      wb_dat_i == 8'b0001_0000;  //mcr[4] set -> enable the loopback mode
+    });
+    `uvm_info(get_type_name, "configuring mcr to loopback mode", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW);
+
+    ////////////////////configure ier///////////////////////////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 1;  //ier
+      wb_we_i == 1;
+      wb_dat_i == 8'b0000_0001;  //enable the rcvr buffer intrupt
+    });
+    `uvm_info(get_type_name, "configuring ier", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW);
+
+
+    //////////////////////////////write via thr//////////////////////////
+    //    repeat (10) begin
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 0;  //thr
+      wb_we_i == 1;
+      wb_dat_i == e_cfg.i1;  // setting the data in test via e_cfg
+    });
+    `uvm_info(get_type_name, "Loading the data to thr", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+    //   end
+
+    //////////////////////////read iir/////////////////////////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 2;  //iir
+      wb_we_i == 0;  //read
+    });
+    `uvm_info(get_type_name, "reading iir", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW);
+
+    //NOTE:get responce
+
+    get_response(req);
+
+    //Check the iir
+    if (req.iir[3:1] == 3'b010) begin
+      $display("The value of iir is %0b", req.iir);
+      // sending 10 data form other uart
+      //      repeat (10) begin
+      start_item(req);
+      assert (req.randomize() with {
+        wb_addr_i == 0;  //rb
+        wb_we_i == 0;  //read
+      });
+      `uvm_info(get_type_name, $sformatf("Printing from sequence: \n%s", req.sprint()), UVM_HIGH)
+      finish_item(req);
+      //     end
+    end
+  end
+endtask
+
+class loopback_seq2 extends UART_sequence_base;
+  `uvm_object_utils(loopback_seq2)
+  extern function new(string name = "loopback_seq2");
+  extern task body;
+endclass
+
+function loopback_seq2::new(string name = "loopback_seq2");
+  super.new(name);
+endfunction
+
+task loopback_seq2::body;
+  super.body;
+  begin
+    ///////////select the dlr via the lcr/////////////////////////////
+    req = UART_xtn::type_id::create("req");
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 3;
+      wb_we_i == 1;
+      wb_dat_i[7] == 1;  //NOTE: LCR is [7:0]
+    });
+    `uvm_info(get_type_name, "configuring LCR to load dlr", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+
+    /////////////////////////update the dlr msb with diviser/////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 1;  //#10clk DLR MSB = 162 = 16'b0000_0000_1010_0010;
+      wb_we_i == 1;
+      wb_dat_i == 8'b0000_0000;
+    });
+    `uvm_info(get_type_name, "Loading DLR MSB", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+
+
+    /////////////////////////update the dlr lsb with diviser/////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 0;  //#10clk DLR MSB = 162 = 16'b0000_0000_1010_0010;
+      wb_we_i == 1;
+      wb_dat_i == 8'b1010_0010;
+    });
+    `uvm_info(get_type_name, "Loading DLR LSB", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+
+    ///////////////////////configure lcr///////////////////////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 3;  //lcr
+      wb_we_i == 1;
+      wb_dat_i == 8'b0000_0011;  //no parity,8bit,1stop bit
+    });
+    `uvm_info(get_type_name, "Configuring LCR to default mode", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+
+    ////////////////////////configure fcr//////////////////////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 2;  //fcr
+      wb_we_i == 1;
+      wb_dat_i == 8'b0000_0110;  //trigger after 1 byte reception and clear fifo
+    });
+    `uvm_info(get_type_name, "Configuring fcr", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+
+    ////////////////////configure mcr///////////////////////////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 4;  //mcr
+      wb_we_i == 1;
+      wb_dat_i == 8'b0001_0000;  //mcr[4] set -> enable the loopback mode
+    });
+    `uvm_info(get_type_name, "configuring mcr to loopback mode", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW);
+
+    ////////////////////configure ier///////////////////////////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 1;  //ier
+      wb_we_i == 1;
+      wb_dat_i == 8'b0000_0001;  //enable the rcvr buffer intrupt
+    });
+    `uvm_info(get_type_name, "configuring ier", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW);
+
+
+    //////////////////////////////write via thr//////////////////////////
+    //    repeat (10) begin
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 0;  //thr
+      wb_we_i == 1;
+      wb_dat_i == e_cfg.i1;  // setting the data in test via e_cfg
+    });
+    `uvm_info(get_type_name, "Loading the data to thr", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+    //   end
+
+    //////////////////////////read iir/////////////////////////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 2;  //iir
+      wb_we_i == 0;  //read
+    });
+    `uvm_info(get_type_name, "reading iir", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW);
+
+    //NOTE:get responce
+
+    get_response(req);
+
+    //Check the iir
+    if (req.iir[3:1] == 3'b010) begin
+      $display("The value of iir is %0b", req.iir);
+      // sending 10 data form other uart
+      //      repeat (10) begin
+      start_item(req);
+      assert (req.randomize() with {
+        wb_addr_i == 0;  //rb
+        wb_we_i == 0;  //read
+      });
+      `uvm_info(get_type_name, $sformatf("Printing from sequence: \n%s", req.sprint()), UVM_HIGH)
+      finish_item(req);
+      //     end
+    end
+  end
+endtask
+
+class parity_error_seq1 extends UART_sequence_base;
+  `uvm_object_utils(parity_error_seq1)
+  extern function new(string name = "parity_error_seq1");
+  extern task body;
+endclass
+
+function parity_error_seq1::new(string name = "parity_error_seq1");
+  super.new(name);
+endfunction
+
+task parity_error_seq1::body;
+  super.body;
+  begin
+    ///////////select the dlr via the lcr/////////////////////////////
+    req = UART_xtn::type_id::create("req");
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 3;
+      wb_we_i == 1;
+      wb_dat_i[7] == 1;  //NOTE: LCR is [7:0]
+    });
+    `uvm_info(get_type_name, "configuring LCR to load dlr", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+
+    /////////////////////////update the dlr msb with diviser/////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 1;  //#10clk DLR MSB = 325 = 16'b0000_0001_0100_0101
+      wb_we_i == 1;
+      wb_dat_i == 8'b0000_0001;
+    });
+    `uvm_info(get_type_name, "Loading DLR MSB", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+
+
+    /////////////////////////update the dlr lsb with diviser/////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 0;  //#10clk DLR MSB = 325 = 16'b0000_0001_0100_0101
+      wb_we_i == 1;
+      wb_dat_i == 8'b0100_0101;
+    });
+    `uvm_info(get_type_name, "Loading DLR LSB", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+
+    ///////////////////////configure lcr///////////////////////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 3;  //lcr
+      wb_we_i == 1;
+      wb_dat_i == 8'b0001_1011;  //LCR[4]:set -> even parity,8bit,1stop bit
+                                 //LCR[3]:set -> enable parity
+    });
+    `uvm_info(get_type_name, "Configuring LCR to default mode", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+
+    ////////////////////////configure fcr//////////////////////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 2;  //fcr
+      wb_we_i == 1;
+      wb_dat_i == 8'b0000_0110;  //trigger after 1 byte reception and clear fifo
+    });
+    `uvm_info(get_type_name, "Configuring fcr", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+
+    ////////////////////configure ier///////////////////////////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 1;  //ier
+      wb_we_i == 1;
+      wb_dat_i == 8'b0000_0100;  //IER[2]: set -> enable lsr
+    });
+    `uvm_info(get_type_name, "configuring ier", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW);
+
+    //////////////////////////////write via thr//////////////////////////
+    //    repeat (10) begin
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 0;  //thr
+      wb_we_i == 1;
+      wb_dat_i == e_cfg.i1;  // setting the data in test via e_cfg
+    });
+    `uvm_info(get_type_name, "Loading the data to thr", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+    //   end
+
+    //////////////////////////read iir/////////////////////////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 2;  //iir
+      wb_we_i == 0;  //read
+    });
+    `uvm_info(get_type_name, "reading iir", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW);
+
+    //NOTE:get responce
+
+    get_response(req);
+
+    //Check the iir
+    if (req.iir[3:1] == 3'b011) begin
+      $display("The value of iir is %0b", req.iir);
+      // sending 10 data form other uart
+      //      repeat (10) begin
+      start_item(req);
+      assert (req.randomize() with {
+        wb_addr_i == 5;  //lsr
+        wb_we_i == 0;  //read
+      });
+      `uvm_info(get_type_name, $sformatf("Printing from sequence: \n%s", req.sprint()), UVM_HIGH)
+      finish_item(req);
+      //     end
+    end
+  end
+endtask
+
+class parity_error_seq2 extends UART_sequence_base;
+  `uvm_object_utils(parity_error_seq2)
+  extern function new(string name = "parity_error_seq2");
+  extern task body;
+endclass
+
+function parity_error_seq2::new(string name = "parity_error_seq2");
+  super.new(name);
+endfunction
+
+task parity_error_seq2::body;
+  super.body;
+  begin
+    ///////////select the dlr via the lcr/////////////////////////////
+    req = UART_xtn::type_id::create("req");
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 3;
+      wb_we_i == 1;
+      wb_dat_i[7] == 1;  //NOTE: LCR is [7:0]
+    });
+    `uvm_info(get_type_name, "configuring lcr to load dlr agth[1]", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+
+    /////////////////////////update the dlr msb with diviser/////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 1;  //#10clk DLR MSB = 162 = 16'b0000_0000_1010_0010
+      wb_we_i == 1;
+      wb_dat_i == 8'b0000_0000;
+    });
+    `uvm_info(get_type_name, "Loading dlr msb", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+
+
+    /////////////////////////update the dlr lsb with diviser/////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 0;  //#10clk DLR MSB = 162 = 16'b0000_0000_1010_0010
+      wb_we_i == 1;
+      wb_dat_i == 8'b1010_0010;
+    });
+    `uvm_info(get_type_name, "Loading dlr lsb", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+
+    ///////////////////////configure lcr///////////////////////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 3;  //lcr
+      wb_we_i == 1;
+      wb_dat_i == 8'b0000_1011;  //LCR[4]:reset -> odd parity,8bit,1stop bit
+                                 //LCR[3]:set -> enable parity
+    });
+    `uvm_info(get_type_name, "configuring lcr to default mode", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+
+    ////////////////////////configure fcr//////////////////////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 2;  //fcr
+      wb_we_i == 1;
+      wb_dat_i == 8'b0000_0110;  //trigger after 1 byte reception and clear fifo
+    });
+    `uvm_info(get_type_name, "configuring fcr", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+
+    ////////////////////configure ier///////////////////////////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 1;  //ier
+      wb_we_i == 1;
+      wb_dat_i == 8'b0000_0100;  //IER[2]: set -> enable lsr
+    });
+    `uvm_info(get_type_name, "configuring ier", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW);
+
+    //////////////////////////////write via thr//////////////////////////
+    //  repeat (10) begin
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 0;  //thr
+      wb_we_i == 1;
+      wb_dat_i == e_cfg.i2;  // setting the data in test via e_cfg
+    });
+    `uvm_info(get_type_name, "writing data to thr", UVM_LOW)
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
+    // end
+
+    //////////////////////////read iir/////////////////////////////////
+    start_item(req);
+    `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
+    assert (req.randomize() with {
+      wb_addr_i == 2;  //iir
+      wb_we_i == 0;  //read
+    });
+    `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
+    finish_item(req);
+    `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW);
+
+    //NOTE:get responce
+
+    get_response(req);
+
+    //Check the iir
+    if (req.iir[3:1] == 3'b011) begin
+      $display("The value of iir is %0b", req.iir);
+      // sending 10 data form other uart
+      //      repeat (10) begin
+      start_item(req);
+      assert (req.randomize() with {
+        wb_addr_i == 5;  //read lsr
         wb_we_i == 0;  //read
       });
       `uvm_info(get_type_name, $sformatf("Printing from sequence: \n%s", req.sprint()), UVM_HIGH)
