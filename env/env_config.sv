@@ -13,6 +13,8 @@ class env_config extends uvm_object;
   bit is_hd;
   bit is_lb;
   bit is_pe;
+  bit is_fe;
+  bit is_oe;
 
   bit has_virtual_sequencer = 1;
 

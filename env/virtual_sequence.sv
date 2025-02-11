@@ -20,6 +20,12 @@ class virtual_seqs_base extends uvm_sequence #(uvm_sequence_item);
   parity_error_seq1 pe_seq1;
   parity_error_seq2 pe_seq2;
 
+  framing_error_seq1 fe_seq1;
+  framing_error_seq2 fe_seq2;
+
+  overrun_error_seq1 oe_seq1;
+  overrun_error_seq2 oe_seq2;
+
   extern function new(string name = "virtual_seqs_base");
   extern task body;
 endclass
@@ -125,5 +131,47 @@ task parity_error_vseq::body;
   fork
     pe_seq1.start(seqrh[0]);
     pe_seq2.start(seqrh[1]);
+  join
+endtask
+
+class framing_error_vseq extends virtual_seqs_base;
+  `uvm_object_utils(framing_error_vseq)
+  extern function new(string name = "framing_error_vseq");
+  extern task body;
+endclass
+
+function framing_error_vseq::new(string name = "framing_error_vseq");
+  super.new(name);
+endfunction
+
+task framing_error_vseq::body;
+  super.body();
+  `uvm_info(get_type_name, "In the body of framing_error", UVM_LOW)
+  fe_seq1 = framing_error_seq1::type_id::create("fe_seq1");
+  fe_seq2 = framing_error_seq2::type_id::create("fe_seq2");
+  fork
+    fe_seq1.start(seqrh[0]);
+    fe_seq2.start(seqrh[1]);
+  join
+endtask
+
+class overrun_error_vseq extends virtual_seqs_base;
+  `uvm_object_utils(overrun_error_vseq)
+  extern function new(string name = "overrun_error_vseq");
+  extern task body;
+endclass
+
+function overrun_error_vseq::new(string name = "overrun_error_vseq");
+  super.new(name);
+endfunction
+
+task overrun_error_vseq::body;
+  super.body();
+  `uvm_info(get_type_name, "In the body of overrun_error", UVM_LOW)
+  oe_seq1 = overrun_error_seq1::type_id::create("oe_seq1");
+  oe_seq2 = overrun_error_seq2::type_id::create("oe_seq2");
+  fork
+    oe_seq1.start(seqrh[0]);
+    oe_seq2.start(seqrh[1]);
   join
 endtask

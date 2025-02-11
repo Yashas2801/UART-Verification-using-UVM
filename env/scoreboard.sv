@@ -102,6 +102,21 @@ function void uart_scoreboard::check_phase(uvm_phase phase);
     end else begin
       `uvm_error("PARITY_CHECK", "UART2: Expected parity error but none detected")
     end
+  end else if (m_cfg.is_fe) begin
+    `uvm_info("FRAMING_CHECK", "Running Framing Error Check", UVM_MEDIUM)
+    /*
+    if (wr_data1.lsr[3]) begin
+      `uvm_info("FRAMING_CHECK", "UART1: Framing error detected as expected", UVM_MEDIUM)
+    end else begin
+      `uvm_error("FRAMING_CHECK", "UART1: Expected framing error but none detected")
+    end
+*/
+    if (wr_data2.lsr[3]) begin
+      `uvm_info("FRAMING_CHECK", "UART2: Framing error detected as expected", UVM_MEDIUM)
+    end else begin
+      `uvm_error("FRAMING_CHECK", "UART2: Expected framing error but none detected")
+    end
+
   end
 endfunction
 
