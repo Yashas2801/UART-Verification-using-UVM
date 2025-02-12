@@ -26,6 +26,9 @@ class virtual_seqs_base extends uvm_sequence #(uvm_sequence_item);
   overrun_error_seq1 oe_seq1;
   overrun_error_seq2 oe_seq2;
 
+  breakinterrupt_error_seq1 be_seq1;
+  breakinterrupt_error_seq2 be_seq2;
+
   extern function new(string name = "virtual_seqs_base");
   extern task body;
 endclass
@@ -175,3 +178,25 @@ task overrun_error_vseq::body;
     oe_seq2.start(seqrh[1]);
   join
 endtask
+
+class breakinterrupt_error_vseq extends virtual_seqs_base;
+  `uvm_object_utils(breakinterrupt_error_vseq)
+  extern function new(string name = "breakinterrupt_error_vseq");
+  extern task body;
+endclass
+
+function breakinterrupt_error_vseq::new(string name = "breakinterrupt_error_vseq");
+  super.new(name);
+endfunction
+
+task breakinterrupt_error_vseq::body;
+  super.body();
+  `uvm_info(get_type_name, "In the body of breakinterrupt_error", UVM_LOW)
+  be_seq1 = breakinterrupt_error_seq1::type_id::create("be_seq1");
+  be_seq2 = breakinterrupt_error_seq2::type_id::create("be_seq2");
+  fork
+    be_seq1.start(seqrh[0]);
+    be_seq2.start(seqrh[1]);
+  join
+endtask
+

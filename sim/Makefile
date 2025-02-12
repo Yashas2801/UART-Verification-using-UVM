@@ -1,8 +1,8 @@
 # SIMULATOR = Questa for Mentor's Questasim
 # Sv_Seed = 1339996228 for framing
 # Sv_seed = 579432340 for parity 
+# Sv_Seed = 3504803284 for breakinterrupt_error_test
 SIMULATOR = Questa
-
 
 SEED_NO= 579432340 
 RTL= ../rtl/*
@@ -19,6 +19,7 @@ VSIMBATCH4= -c -do  " log -r /* ;coverage save -onexit mem_cov4;run -all; exit"
 VSIMBATCH5= -c -do  " log -r /* ;coverage save -onexit mem_cov5;run -all; exit"
 VSIMBATCH6= -c -do  " log -r /* ;coverage save -onexit mem_cov6;run -all; exit"
 VSIMBATCH7= -c -do  " log -r /* ;coverage save -onexit mem_cov7;run -all; exit"
+VSIMBATCH8= -c -do  " log -r /* ;coverage save -onexit mem_cov8;run -all; exit"
 VERBOSITY= +UVM_VERBOSITY=UVM_MEDIUM
 
 help:
@@ -33,13 +34,15 @@ help:
 	@echo "! run_test4	=>  clean, compile & run the simulation for parity_error_test	!"  
 	@echo "! run_test5	=>  clean, compile & run the simulation for framing_error_test	!"  
 	@echo "! run_test6	=>  clean, compile & run the simulation for overrun_error_test	!"  
+	@echo "! run_test7	=>  clean, compile & run the simulation for breakinterrupt_error_test	!"  
 	@echo "! view_wave1 =>  To view the waveform of base_test	    						!" 
 	@echo "! view_wave2 =>  To view the waveform of full_duplex_test	    						!" 
 	@echo "! view_wave3 =>  To view the waveform of half_duplex_test 						!" 
 	@echo "! view_wave4 =>  To view the waveform of loopback_test   							!" 
 	@echo "! view_wave5 =>  To view the waveform of parity_error_test    							!" 
 	@echo "! view_wave6 =>  To view the waveform of framing_error_test    							!" 
-	@echo "! view_wave6 =>  To view the waveform of overrun_error_test    							!" 
+	@echo "! view_wave7 =>  To view the waveform of overrun_error_test    							!" 
+	@echo "! view_wave8 =>  To view the waveform of breakinterrupt_error_test							!" 
 	@echo "! regress    =>  clean, compile and run all testcases in batch mode.		    				!"
 	@echo "! report     =>  To merge coverage reports for all testcases and  convert to html format.			!"
 	@echo "! cov        =>  To open merged coverage report in html format.							!"
@@ -54,6 +57,7 @@ run_test3  : run_test3_$(SIMULATOR)
 run_test4  : run_test4_$(SIMULATOR)
 run_test5  : run_test5_$(SIMULATOR)
 run_test6  : run_test6_$(SIMULATOR)
+run_test7  : run_test7_$(SIMULATOR)
 view_wave1 : view_wave1_$(SIMULATOR)
 view_wave2 : view_wave2_$(SIMULATOR)
 view_wave3 : view_wave3_$(SIMULATOR)
@@ -61,6 +65,7 @@ view_wave4 : view_wave4_$(SIMULATOR)
 view_wave5 : view_wave5_$(SIMULATOR)
 view_wave6 : view_wave6_$(SIMULATOR)
 view_wave7 : view_wave7_$(SIMULATOR)
+view_wave8 : view_wave8_$(SIMULATOR)
 regress    : regress_$(SIMULATOR)
 report     : report_$(SIMULATOR)
 cov        : cov_$(SIMULATOR)
@@ -99,6 +104,10 @@ run_test5_Questa:sv_cmp
 run_test6_Questa:sv_cmp
 	vsim -cvgperinstance $(VSIMOPT) $(VSIMCOV) $(VSIMBATCH5) $(VERBOSITY) -wlf wave_file7.wlf -l test7.log  -sv_seed random work.top +UVM_TESTNAME=overrun_error_test
 	vcover report  -cvg  -details -nocompactcrossbins -codeAll -assert -directive -html mem_cov7
+
+run_test7_Questa:sv_cmp
+	vsim -cvgperinstance $(VSIMOPT) $(VSIMCOV) $(VSIMBATCH5) $(VERBOSITY) -wlf wave_file8.wlf -l test8.log  -sv_seed random work.top +UVM_TESTNAME=breakinterrupt_error_test
+	vcover report  -cvg  -details -nocompactcrossbins -codeAll -assert -directive -html mem_cov8
  
 view_wave1_Questa:
 	vsim -view wave_file1.wlf
@@ -121,11 +130,14 @@ view_wave6_Questa:
 view_wave7_Questa:
 	vsim -view wave_file7.wlf
 
+view_wave8_Questa:
+	vsim -view wave_file8.wlf
+
 report_Questa:
-	vcover merge mem_cov mem_cov1 mem_cov2 mem_cov3 mem_cov4 mem_cov5 mem_cov6 mem_cov7
+	vcover merge mem_cov mem_cov1 mem_cov2 mem_cov3 mem_cov4 mem_cov5 mem_cov6 mem_cov7 mem_cov8
 	vcover report -cvg -details -nocompactcrossbins -codeAll -assert -directive -html mem_cov
 
-regress_Questa: clean_Questa run_test_Questa run_test1_Questa run_test2_Questa run_test3_Questa run_test4_Questa run_test5_Questa run_test6_Questa report_Questa 
+regress_Questa: clean_Questa run_test_Questa run_test1_Questa run_test2_Questa run_test3_Questa run_test4_Questa run_test5_Questa run_test6_Questa run_test7_Questa report_Questa 
 
 cov_Questa:
 	firefox covhtmlreport/index.html&

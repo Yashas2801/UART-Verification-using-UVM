@@ -117,6 +117,22 @@ function void uart_scoreboard::check_phase(uvm_phase phase);
       `uvm_error("FRAMING_CHECK", "UART2: Expected framing error but none detected")
     end
 
+  end else if (m_cfg.is_be) begin
+    `uvm_info("BREAKINTERRUPT_CHECK", "Running Break Interrupt Error Check", UVM_MEDIUM)
+
+    if (wr_data1.lsr[4]) begin
+      `uvm_info("BREAKINTERRUPT_CHECK", "UART1: Break Interrupt error detected as expected",
+                UVM_MEDIUM)
+    end else begin
+      `uvm_error("BREAKINTERRUPT_CHECK", "UART1: Expected break interrupt error but none detected")
+    end
+
+    if (wr_data2.lsr[4]) begin
+      `uvm_info("BREAKINTERRUPT_CHECK", "UART2: Break Interrupt error detected as expected",
+                UVM_MEDIUM)
+    end else begin
+      `uvm_error("BREAKINTERRUPT_CHECK", "UART2: Expected break interrupt error but none detected")
+    end
   end
 endfunction
 
