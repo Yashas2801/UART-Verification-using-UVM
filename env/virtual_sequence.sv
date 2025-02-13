@@ -29,6 +29,12 @@ class virtual_seqs_base extends uvm_sequence #(uvm_sequence_item);
   breakinterrupt_error_seq1 be_seq1;
   breakinterrupt_error_seq2 be_seq2;
 
+  timeout_error_seq1 te_seq1;
+  timeout_error_seq2 te_seq2;
+
+  thr_empty_seq1 thr_seq1;
+  thr_empty_seq2 thr_seq2;
+
   extern function new(string name = "virtual_seqs_base");
   extern task body;
 endclass
@@ -197,6 +203,48 @@ task breakinterrupt_error_vseq::body;
   fork
     be_seq1.start(seqrh[0]);
     be_seq2.start(seqrh[1]);
+  join
+endtask
+
+class timeout_error_vseq extends virtual_seqs_base;
+  `uvm_object_utils(timeout_error_vseq)
+  extern function new(string name = "timeout_error_vseq");
+  extern task body;
+endclass
+
+function timeout_error_vseq::new(string name = "timeout_error_vseq");
+  super.new(name);
+endfunction
+
+task timeout_error_vseq::body;
+  super.body();
+  `uvm_info(get_type_name, "In the body of timeout_error", UVM_LOW)
+  te_seq1 = timeout_error_seq1::type_id::create("te_seq1");
+  te_seq2 = timeout_error_seq2::type_id::create("te_seq2");
+  fork
+    te_seq1.start(seqrh[0]);
+    te_seq2.start(seqrh[1]);
+  join
+endtask
+
+class thr_empty_vseq extends virtual_seqs_base;
+  `uvm_object_utils(thr_empty_vseq)
+  extern function new(string name = "thr_empty_vseq");
+  extern task body;
+endclass
+
+function thr_empty_vseq::new(string name = "thr_empty_vseq");
+  super.new(name);
+endfunction
+
+task thr_empty_vseq::body;
+  super.body();
+  `uvm_info(get_type_name, "In the body of thr_empty", UVM_LOW)
+  thr_seq1 = thr_empty_seq1::type_id::create("thr_seq1");
+  thr_seq2 = thr_empty_seq2::type_id::create("thr_seq2");
+  fork
+    thr_seq1.start(seqrh[0]);
+    thr_seq2.start(seqrh[1]);
   join
 endtask
 

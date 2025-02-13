@@ -16,6 +16,8 @@ class UART_test_base extends uvm_test;
   bit is_fe;
   bit is_oe;
   bit is_be;
+  bit is_te;
+  bit is_thr;
 
   byte unsigned i1 = 8'b1011_0010;  //'d178
   byte unsigned i2 = 8'b1111_0000;  //'d240
@@ -28,6 +30,8 @@ class UART_test_base extends uvm_test;
   framing_error_vseq fe_vseq;
   overrun_error_vseq oe_vseq;
   breakinterrupt_error_vseq be_vseq;
+  timeout_error_vseq te_vseq;
+  thr_empty_vseq thr_vseq;
 
   extern function new(string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
@@ -81,6 +85,8 @@ function void UART_test_base::build_phase(uvm_phase phase);
   e_cfg.is_fe = is_fe;
   e_cfg.is_oe = is_oe;
   e_cfg.is_be = is_be;
+  e_cfg.is_te = is_te;
+  e_cfg.is_thr = is_thr;
 
   uvm_config_db#(env_config)::set(this, "*", "env_config", e_cfg);
 
@@ -276,6 +282,57 @@ task breakinterrupt_error_test::run_phase(uvm_phase phase);
   be_vseq = breakinterrupt_error_vseq::type_id::create("be_vseq");
   phase.raise_objection(this);
   be_vseq.start(envh.vseqrh);
+  phase.drop_objection(this);
+endtask
+
+class timeout_error_test extends UART_test_base;
+  `uvm_component_utils(timeout_error_test)
+
+  extern function new(string name, uvm_component parent);
+  extern function void build_phase(uvm_phase phase);
+  extern task run_phase(uvm_phase phase);
+endclass
+
+function timeout_error_test::new(string name, uvm_component parent);
+  super.new(name, parent);
+endfunction
+
+function void timeout_error_test::build_phase(uvm_phase phase);
+  is_te = 1;
+  super.build_phase(phase);
+  `uvm_info(get_type_name, "In the build_phase of timeout_error_test", UVM_LOW)
+endfunction
+
+task timeout_error_test::run_phase(uvm_phase phase);
+  te_vseq = timeout_error_vseq::type_id::create("te_vseq");
+  phase.raise_objection(this);
+  te_vseq.start(envh.vseqrh);
+  phase.drop_objection(this);
+endtask
+
+class thr_empty_test extends UART_test_base;
+  `uvm_component_utils(thr_empty_test)
+
+  extern function new(string name, uvm_component parent);
+  extern function void build_phase(uvm_phase phase);
+  extern task run_phase(uvm_phase phase);
+endclass
+
+
+function thr_empty_test::new(string name, uvm_component parent);
+  super.new(name, parent);
+endfunction
+
+function void thr_empty_test::build_phase(uvm_phase phase);
+  is_thr = 1;
+  super.build_phase(phase);
+  `uvm_info(get_type_name, "In the build_phase of thr_empty_test", UVM_LOW)
+endfunction
+
+task thr_empty_test::run_phase(uvm_phase phase);
+  thr_vseq = thr_empty_vseq::type_id::create("thr_vseq");
+  phase.raise_objection(this);
+  thr_vseq.start(envh.vseqrh);
   phase.drop_objection(this);
 endtask
 
