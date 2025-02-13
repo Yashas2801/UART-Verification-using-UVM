@@ -2,6 +2,8 @@
 # Sv_Seed = 1339996228 for framing
 # Sv_seed = 579432340 for parity 
 # Sv_Seed = 3504803284 for breakinterrupt_error_test
+# Sv_Seed = 2087349103 for overrun_error_test
+# Sv_Seed = 1208779359 for thr_empty_test
 SIMULATOR = Questa
 
 SEED_NO= 579432340 
@@ -20,6 +22,8 @@ VSIMBATCH5= -c -do  " log -r /* ;coverage save -onexit mem_cov5;run -all; exit"
 VSIMBATCH6= -c -do  " log -r /* ;coverage save -onexit mem_cov6;run -all; exit"
 VSIMBATCH7= -c -do  " log -r /* ;coverage save -onexit mem_cov7;run -all; exit"
 VSIMBATCH8= -c -do  " log -r /* ;coverage save -onexit mem_cov8;run -all; exit"
+VSIMBATCH9= -c -do  " log -r /* ;coverage save -onexit mem_cov9;run -all; exit"
+VSIMBATCH10= -c -do  " log -r /* ;coverage save -onexit mem_cov10;run -all; exit"
 VERBOSITY= +UVM_VERBOSITY=UVM_MEDIUM
 
 help:
@@ -35,6 +39,8 @@ help:
 	@echo "! run_test5	=>  clean, compile & run the simulation for framing_error_test	!"  
 	@echo "! run_test6	=>  clean, compile & run the simulation for overrun_error_test	!"  
 	@echo "! run_test7	=>  clean, compile & run the simulation for breakinterrupt_error_test	!"  
+	@echo "! run_test8	=>  clean, compile & run the simulation for timeout_error_test	!"  
+	@echo "! run_test9	=>  clean, compile & run the simulation for thr_empty_test	!"  
 	@echo "! view_wave1 =>  To view the waveform of base_test	    						!" 
 	@echo "! view_wave2 =>  To view the waveform of full_duplex_test	    						!" 
 	@echo "! view_wave3 =>  To view the waveform of half_duplex_test 						!" 
@@ -43,6 +49,8 @@ help:
 	@echo "! view_wave6 =>  To view the waveform of framing_error_test    							!" 
 	@echo "! view_wave7 =>  To view the waveform of overrun_error_test    							!" 
 	@echo "! view_wave8 =>  To view the waveform of breakinterrupt_error_test							!" 
+	@echo "! view_wave9 =>  To view the waveform of timeout_error_test							!" 
+	@echo "! view_wave10 =>  To view the waveform of thr_empty_test														!" 
 	@echo "! regress    =>  clean, compile and run all testcases in batch mode.		    				!"
 	@echo "! report     =>  To merge coverage reports for all testcases and  convert to html format.			!"
 	@echo "! cov        =>  To open merged coverage report in html format.							!"
@@ -58,6 +66,8 @@ run_test4  : run_test4_$(SIMULATOR)
 run_test5  : run_test5_$(SIMULATOR)
 run_test6  : run_test6_$(SIMULATOR)
 run_test7  : run_test7_$(SIMULATOR)
+run_test8  : run_test8_$(SIMULATOR)
+run_test9  : run_test9_$(SIMULATOR)
 view_wave1 : view_wave1_$(SIMULATOR)
 view_wave2 : view_wave2_$(SIMULATOR)
 view_wave3 : view_wave3_$(SIMULATOR)
@@ -66,6 +76,8 @@ view_wave5 : view_wave5_$(SIMULATOR)
 view_wave6 : view_wave6_$(SIMULATOR)
 view_wave7 : view_wave7_$(SIMULATOR)
 view_wave8 : view_wave8_$(SIMULATOR)
+view_wave9 : view_wave9_$(SIMULATOR)
+view_wave10 : view_wave10_$(SIMULATOR)
 regress    : regress_$(SIMULATOR)
 report     : report_$(SIMULATOR)
 cov        : cov_$(SIMULATOR)
@@ -98,16 +110,24 @@ run_test4_Questa:sv_cmp
 	vcover report  -cvg  -details -nocompactcrossbins -codeAll -assert -directive -html mem_cov5
 
 run_test5_Questa:sv_cmp
-	vsim -cvgperinstance $(VSIMOPT) $(VSIMCOV) $(VSIMBATCH5) $(VERBOSITY) -wlf wave_file6.wlf -l test6.log  -sv_seed 1339996228 work.top +UVM_TESTNAME=framing_error_test
+	vsim -cvgperinstance $(VSIMOPT) $(VSIMCOV) $(VSIMBATCH6) $(VERBOSITY) -wlf wave_file6.wlf -l test6.log  -sv_seed 1339996228 work.top +UVM_TESTNAME=framing_error_test
 	vcover report  -cvg  -details -nocompactcrossbins -codeAll -assert -directive -html mem_cov6
 
 run_test6_Questa:sv_cmp
-	vsim -cvgperinstance $(VSIMOPT) $(VSIMCOV) $(VSIMBATCH5) $(VERBOSITY) -wlf wave_file7.wlf -l test7.log  -sv_seed random work.top +UVM_TESTNAME=overrun_error_test
+	vsim -cvgperinstance $(VSIMOPT) $(VSIMCOV) $(VSIMBATCH7) $(VERBOSITY) -wlf wave_file7.wlf -l test7.log  -sv_seed 2087349103 work.top +UVM_TESTNAME=overrun_error_test
 	vcover report  -cvg  -details -nocompactcrossbins -codeAll -assert -directive -html mem_cov7
 
 run_test7_Questa:sv_cmp
-	vsim -cvgperinstance $(VSIMOPT) $(VSIMCOV) $(VSIMBATCH5) $(VERBOSITY) -wlf wave_file8.wlf -l test8.log  -sv_seed random work.top +UVM_TESTNAME=breakinterrupt_error_test
+	vsim -cvgperinstance $(VSIMOPT) $(VSIMCOV) $(VSIMBATCH8) $(VERBOSITY) -wlf wave_file8.wlf -l test8.log  -sv_seed 3504803284 work.top +UVM_TESTNAME=breakinterrupt_error_test
 	vcover report  -cvg  -details -nocompactcrossbins -codeAll -assert -directive -html mem_cov8
+
+run_test8_Questa:sv_cmp
+	vsim -cvgperinstance $(VSIMOPT) $(VSIMCOV) $(VSIMBATCH9) $(VERBOSITY) -wlf wave_file9.wlf -l test9.log  -sv_seed random work.top +UVM_TESTNAME=timeout_error_test
+	vcover report  -cvg  -details -nocompactcrossbins -codeAll -assert -directive -html mem_cov9
+
+run_test9_Questa:sv_cmp
+	vsim -cvgperinstance $(VSIMOPT) $(VSIMCOV) $(VSIMBATCH10) $(VERBOSITY) -wlf wave_file10.wlf -l test10.log  -sv_seed 1208779359 work.top +UVM_TESTNAME=thr_empty_test
+	vcover report  -cvg  -details -nocompactcrossbins -codeAll -assert -directive -html mem_cov10
  
 view_wave1_Questa:
 	vsim -view wave_file1.wlf
@@ -133,11 +153,17 @@ view_wave7_Questa:
 view_wave8_Questa:
 	vsim -view wave_file8.wlf
 
+view_wave9_Questa:
+	vsim -view wave_file9.wlf
+
+view_wave10_Questa:
+	vsim -view wave_file10.wlf
+
 report_Questa:
-	vcover merge mem_cov mem_cov1 mem_cov2 mem_cov3 mem_cov4 mem_cov5 mem_cov6 mem_cov7 mem_cov8
+	vcover merge mem_cov mem_cov1 mem_cov2 mem_cov3 mem_cov4 mem_cov5 mem_cov6 mem_cov7 mem_cov8 mem_cov9 mem_cov10
 	vcover report -cvg -details -nocompactcrossbins -codeAll -assert -directive -html mem_cov
 
-regress_Questa: clean_Questa run_test_Questa run_test1_Questa run_test2_Questa run_test3_Questa run_test4_Questa run_test5_Questa run_test6_Questa run_test7_Questa report_Questa 
+regress_Questa: clean_Questa run_test_Questa run_test1_Questa run_test2_Questa run_test3_Questa run_test4_Questa run_test5_Questa run_test6_Questa run_test7_Questa run_test8_Questa run_test9_Questa report_Questa 
 
 cov_Questa:
 	firefox covhtmlreport/index.html&
