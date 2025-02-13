@@ -34,21 +34,21 @@ endfunction
 function void UART_xtn::do_print(uvm_printer printer);
   super.do_print(printer);
 
-  printer.print_field("wb_dat_i", this.wb_dat_i, 8, UVM_DEC);
+  printer.print_field("wb_dat_i", this.wb_dat_i, 8, UVM_BIN);
   printer.print_field("wb_addr_i", this.wb_addr_i, 5, UVM_DEC);
   printer.print_field("wb_stb_i", this.wb_stb_i, 1, UVM_DEC);
   printer.print_field("wb_we_i", this.wb_we_i, 1, UVM_DEC);
   printer.print_field("wb_rst_i", this.wb_rst_i, 1, UVM_DEC);
   printer.print_field("wb_cyc_i", this.wb_cyc_i, 1, UVM_DEC);
-  printer.print_field("lcr", this.lcr, 8, UVM_DEC);
-  printer.print_field("fcr", this.fcr, 8, UVM_DEC);
+  printer.print_field("lcr", this.lcr, 8, UVM_BIN);
+  printer.print_field("fcr", this.fcr, 8, UVM_BIN);
   printer.print_field("lsr", this.lsr, 8, UVM_BIN);
-  printer.print_field("mcr", this.mcr, 8, UVM_DEC);
+  printer.print_field("mcr", this.mcr, 8, UVM_BIN);
   printer.print_field("iir", this.iir, 8, UVM_BIN);
-  printer.print_field("ier", this.ier, 8, UVM_DEC);
-  printer.print_field("msr", this.msr, 8, UVM_DEC);
-  printer.print_field("dlb1", this.dlb1, 8, UVM_DEC);
-  printer.print_field("dlb2", this.dlb2, 8, UVM_DEC);
+  printer.print_field("ier", this.ier, 8, UVM_BIN);
+  printer.print_field("msr", this.msr, 8, UVM_BIN);
+  printer.print_field("dlb1", this.dlb1, 8, UVM_BIN);
+  printer.print_field("dlb2", this.dlb2, 8, UVM_BIN);
 
   foreach (thr[i]) begin
     printer.print_field($sformatf("thr[%0d]", i), this.thr[i], 8, UVM_DEC);
