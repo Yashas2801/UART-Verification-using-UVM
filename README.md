@@ -115,6 +115,6 @@ The verified UART is based on the **UART16550 Core**, which provides industry-st
 - **Modem Status Register (MSR)** - Displays the current state of the modem control lines.
 - **Divisor Latches** - Configures the baud rate for UART communication.
 
-For a more detailed specification, refer to the **[UART16550 Core Technical Manual](your_documentation_link_here)**.
+For a more detailed specification, refer to the **[UART16550 Core Technical Manual](https://github.com/Yashas2801/UART-Verification-using-UVM/blob/1b3729900a32548d624ee482b044b819b4f466d3/UART_16550.pdf)**.
 
 
