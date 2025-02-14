@@ -163,7 +163,7 @@ report_Questa:
 	vcover merge mem_cov mem_cov1 mem_cov2 mem_cov3 mem_cov4 mem_cov5 mem_cov6 mem_cov7 mem_cov8 mem_cov9 mem_cov10
 	vcover report -cvg -details -nocompactcrossbins -codeAll -assert -directive -html mem_cov
 
-regress_Questa: clean_Questa run_test_Questa run_test1_Questa run_test2_Questa run_test3_Questa run_test4_Questa run_test5_Questa run_test6_Questa run_test7_Questa run_test9_Questa report_Questa 
+regress_Questa: clean_Questa run_test_Questa run_test1_Questa run_test2_Questa run_test3_Questa run_test4_Questa run_test5_Questa run_test6_Questa run_test7_Questa run_test8_Questa run_test9_Questa report_Questa 
 
 cov_Questa:
 	firefox covhtmlreport/index.html&
