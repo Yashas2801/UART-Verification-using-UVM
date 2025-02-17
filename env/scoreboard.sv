@@ -118,7 +118,62 @@ class uart_scoreboard extends uvm_scoreboard;
     }
 
   endgroup : mcr_usage_cg
+  //////////////////LSR coverage//////////////////////
 
+  bit [7:0] lsr_val;
+  covergroup lsr_coverage_cg;
+    option.per_instance = 1;
+
+    // Bit 0: Data Ready (DR)
+    cp_dr: coverpoint lsr_val[0] {
+      bins not_ready = {1'b0}; bins ready = {1'b1};
+    }
+
+    // Bit 1: Overrun Error (OE)
+    cp_overrun: coverpoint lsr_val[1] {
+      bins no_overrun = {1'b0}; bins overrun = {1'b1};
+    }
+
+    // Bit 2: Parity Error (PE)
+    cp_parity: coverpoint lsr_val[2] {
+      bins no_parity_err = {1'b0}; bins parity_err = {1'b1};
+    }
+
+    // Bit 3: Framing Error (FE)
+    cp_framing: coverpoint lsr_val[3] {
+      bins no_framing_err = {1'b0}; bins framing_err = {1'b1};
+    }
+
+    // Bit 4: Break Interrupt (BI)
+    cp_break: coverpoint lsr_val[4] {
+      bins no_break = {1'b0}; bins break_int = {1'b1};
+    }
+
+    // Bit 5: THR Empty (THRE)
+    cp_thre: coverpoint lsr_val[5] {
+      bins not_empty = {1'b0}; bins empty = {1'b1};
+    }
+
+  endgroup
+
+  ////////////////////////////////////////////////////
+
+  ///////////////////////////////////iir cg////////////////////
+  bit [7:0] iir_val;
+
+  covergroup iir_coverage_cg;
+    option.per_instance = 1;
+
+    cp_int_id: coverpoint iir_val[3:1] {
+      bins thr_empty = {3'b001};
+      bins rx_available = {3'b010};
+      bins line_status = {3'b011};
+      bins timeout_int = {3'b100};
+    }
+
+  endgroup
+
+  /////////////////////////////////////////////////////////////
   // Covergroup to track outcome flags
   covergroup test_outcome_cg;
     // For each flag, we create a coverpoint with two bins: pass (1) and fail (0)
@@ -160,6 +215,8 @@ function uart_scoreboard::new(string name, uvm_component parent);
   ier_usage_cg = new();
   fcr_usage_cg = new();
   mcr_usage_cg = new();
+  lsr_coverage_cg = new();
+  iir_coverage_cg = new();
 endfunction
 
 function void uart_scoreboard::build_phase(uvm_phase phase);
@@ -193,7 +250,7 @@ task uart_scoreboard::run_phase(uvm_phase phase);
           (wr_data1.wb_cyc_i == 1)) begin
         //`uvm_info("SCOREBOARD_DEBUG", $sformatf(
         //         "Sampling LCR coverage with wr_data1=0x%0h", wr_data1.wb_dat_i), UVM_LOW);
-        lcr_val = wr_data1.wb_dat_i;
+        lcr_val = wr_data1.lcr;
         lcr_usage_cg.sample();
       end
 
@@ -204,7 +261,7 @@ task uart_scoreboard::run_phase(uvm_phase phase);
           (wr_data2.wb_cyc_i == 1)) begin
         //`uvm_info("SCOREBOARD_DEBUG", $sformatf(
         //         "Sampling LCR coverage with wr_data2=0x%0h", wr_data2.wb_dat_i), UVM_LOW);
-        lcr_val = wr_data2.wb_dat_i;
+        lcr_val = wr_data2.lcr;
         lcr_usage_cg.sample();
       end
       //NOTE: ier sample
@@ -213,7 +270,7 @@ task uart_scoreboard::run_phase(uvm_phase phase);
           (wr_data1.wb_stb_i == 1)  &&
           (wr_data1.wb_cyc_i == 1)) begin
 
-        ier_val = wr_data1.wb_dat_i;
+        ier_val = wr_data1.ier;
         ier_usage_cg.sample();  // sample coverage for bits 0..2
       end
 
@@ -222,7 +279,7 @@ task uart_scoreboard::run_phase(uvm_phase phase);
           (wr_data2.wb_stb_i == 1)  &&
           (wr_data2.wb_cyc_i == 1)) begin
 
-        ier_val = wr_data2.wb_dat_i;
+        ier_val = wr_data2.ier;
         ier_usage_cg.sample();
       end
 
@@ -232,7 +289,7 @@ task uart_scoreboard::run_phase(uvm_phase phase);
     (wr_data1.wb_we_i   == 1) &&
     (wr_data1.wb_stb_i  == 1) &&
     (wr_data1.wb_cyc_i  == 1)) begin
-        fcr_val = wr_data1.wb_dat_i;
+        fcr_val = wr_data1.fcr;
         fcr_usage_cg.sample();
       end
 
@@ -240,7 +297,7 @@ task uart_scoreboard::run_phase(uvm_phase phase);
     (wr_data2.wb_we_i   == 1) &&
     (wr_data2.wb_stb_i  == 1) &&
     (wr_data2.wb_cyc_i  == 1)) begin
-        fcr_val = wr_data2.wb_dat_i;
+        fcr_val = wr_data2.fcr;
         fcr_usage_cg.sample();
       end
 
@@ -250,7 +307,7 @@ task uart_scoreboard::run_phase(uvm_phase phase);
     (wr_data1.wb_stb_i  == 1) &&
     (wr_data1.wb_cyc_i  == 1)) begin
 
-        mcr_val = wr_data1.wb_dat_i;
+        mcr_val = wr_data1.mcr;
         mcr_usage_cg.sample();
       end
 
@@ -259,10 +316,42 @@ task uart_scoreboard::run_phase(uvm_phase phase);
     (wr_data2.wb_stb_i  == 1) &&
     (wr_data2.wb_cyc_i  == 1)) begin
 
-        mcr_val = wr_data2.wb_dat_i;
+        mcr_val = wr_data2.mcr;
         mcr_usage_cg.sample();
       end
+      //NOTE: LSR sample
+      //
+      if ((wr_data1.wb_addr_i == 5) && (wr_data1.wb_we_i == 0) &&  // read
+          (wr_data1.wb_stb_i == 1) && (wr_data1.wb_cyc_i == 1)) begin
+        lsr_val = wr_data1.lsr;
+        lsr_coverage_cg.sample();
+      end
 
+      // Similarly, if wr_data2 is also reading LSR:
+      if ((wr_data2.wb_addr_i == 5) &&
+          (wr_data2.wb_we_i   == 0)        &&
+          (wr_data2.wb_stb_i  == 1)        &&
+          (wr_data2.wb_cyc_i  == 1)) begin
+        lsr_val = wr_data2.lsr;
+        lsr_coverage_cg.sample();
+      end
+
+      //NOTE: IIR sample
+      if ((wr_data1.wb_addr_i == 2) && (wr_data1.wb_we_i == 0) &&  // read
+          (wr_data1.wb_stb_i == 1) && (wr_data1.wb_cyc_i == 1)) begin
+
+        iir_val = wr_data1.iir;
+        iir_coverage_cg.sample();
+      end
+
+      if ((wr_data2.wb_addr_i == 2) &&
+    (wr_data2.wb_we_i   == 0)        &&
+    (wr_data2.wb_stb_i  == 1)        &&
+    (wr_data2.wb_cyc_i  == 1)) begin
+
+        iir_val = wr_data2.iir;
+        iir_coverage_cg.sample();
+      end
 
     end
   join
