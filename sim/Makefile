@@ -1,9 +1,12 @@
 # SIMULATOR = Questa for Mentor's Questasim
+# Questa Version 2021.2_1 linux_x86_64 May 15 2021
 # Sv_Seed = 1339996228 for framing
 # Sv_seed = 579432340 for parity 
 # Sv_Seed = 3504803284 for breakinterrupt_error_test
 # Sv_Seed = 2087349103 for overrun_error_test
 # Sv_Seed = 1208779359 for thr_empty_test
+#WARN: Seed_numbers can vary for other questa versions
+#NOTE: replace the seed numbers with random and run each test case and note the seed number
 SIMULATOR = Questa
 
 SEED_NO= 579432340 

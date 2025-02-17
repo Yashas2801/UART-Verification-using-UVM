@@ -16,7 +16,6 @@ class uart_scoreboard extends uvm_scoreboard;
   bit test_passed_thr;
 
   /////////////////////coverage lcr////////////
-  //
   bit [7:0] lcr_val;
   covergroup lcr_usage_cg;
     option.per_instance = 1;
