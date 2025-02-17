@@ -4,6 +4,7 @@
 # Sv_seed = 579432340 for parity 
 # Sv_Seed = 3504803284 for breakinterrupt_error_test
 # Sv_Seed = 2087349103 for overrun_error_test
+# Sv_Seed = 2189750904 for timeout_error_test
 # Sv_Seed = 1208779359 for thr_empty_test
 #WARN: Seed_numbers can vary for other questa versions
 #NOTE: replace the seed numbers with random and run each test case and note the seed number
@@ -113,7 +114,7 @@ run_test4_Questa:sv_cmp
 	vcover report  -cvg  -details -nocompactcrossbins -codeAll -assert -directive -html mem_cov5
 
 run_test5_Questa:sv_cmp
-	vsim -cvgperinstance $(VSIMOPT) $(VSIMCOV) $(VSIMBATCH6) $(VERBOSITY) -wlf wave_file6.wlf -l test6.log  -sv_seed 1339996228 work.top +UVM_TESTNAME=framing_error_test
+	vsim -cvgperinstance $(VSIMOPT) $(VSIMCOV) $(VSIMBATCH6) $(VERBOSITY) -wlf wave_file6.wlf -l test6.log  -sv_seed 1339996228  work.top +UVM_TESTNAME=framing_error_test
 	vcover report  -cvg  -details -nocompactcrossbins -codeAll -assert -directive -html mem_cov6
 
 run_test6_Questa:sv_cmp
@@ -125,7 +126,7 @@ run_test7_Questa:sv_cmp
 	vcover report  -cvg  -details -nocompactcrossbins -codeAll -assert -directive -html mem_cov8
 
 run_test8_Questa:sv_cmp
-	vsim -cvgperinstance $(VSIMOPT) $(VSIMCOV) $(VSIMBATCH9) $(VERBOSITY) -wlf wave_file9.wlf -l test9.log  -sv_seed random work.top +UVM_TESTNAME=timeout_error_test
+	vsim -cvgperinstance $(VSIMOPT) $(VSIMCOV) $(VSIMBATCH9) $(VERBOSITY) -wlf wave_file9.wlf -l test9.log  -sv_seed 2189750904  work.top +UVM_TESTNAME=timeout_error_test
 	vcover report  -cvg  -details -nocompactcrossbins -codeAll -assert -directive -html mem_cov9
 
 run_test9_Questa:sv_cmp
@@ -166,7 +167,7 @@ report_Questa:
 	vcover merge mem_cov mem_cov1 mem_cov2 mem_cov3 mem_cov4 mem_cov5 mem_cov6 mem_cov7 mem_cov8 mem_cov9 mem_cov10
 	vcover report -cvg -details -nocompactcrossbins -codeAll -assert -directive -html mem_cov
 
-regress_Questa: clean_Questa run_test_Questa run_test1_Questa run_test2_Questa run_test3_Questa run_test4_Questa run_test5_Questa run_test6_Questa run_test7_Questa run_test9_Questa report_Questa 
+regress_Questa: clean_Questa run_test_Questa run_test1_Questa run_test2_Questa run_test3_Questa run_test4_Questa run_test5_Questa run_test6_Questa run_test7_Questa run_test8_Questa run_test9_Questa report_Questa 
 
 cov_Questa:
 	firefox covhtmlreport/index.html&

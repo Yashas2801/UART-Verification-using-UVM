@@ -1203,7 +1203,6 @@ task parity_error_seq2::body;
 endtask
 
 
-
 class framing_error_seq1 extends UART_sequence_base;
   `uvm_object_utils(framing_error_seq1)
   extern function new(string name = "framing_error_seq1");
@@ -1486,8 +1485,6 @@ task framing_error_seq2::body;
     end
   end
 endtask
-
-
 
 class overrun_error_seq1 extends UART_sequence_base;
   `uvm_object_utils(overrun_error_seq1)
@@ -2154,7 +2151,7 @@ task timeout_error_seq1::body;
       assert (req.randomize() with {
         wb_addr_i == 0;  //thr
         wb_we_i == 1;
-        wb_dat_i == e_cfg.i1;  // setting the data in test via e_cfg
+        wb_dat_i == 20;  // setting the data in test via e_cfg
       });
       `uvm_info(get_type_name, "Loading the data to thr", UVM_LOW)
       `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
@@ -2163,7 +2160,7 @@ task timeout_error_seq1::body;
     end
 
     //////////////////////////read iir/////////////////////////////////
-    start_item(req);
+    /*   start_item(req);
     `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
     assert (req.randomize() with {
       wb_addr_i == 2;  //iir
@@ -2192,6 +2189,7 @@ task timeout_error_seq1::body;
         finish_item(req);
       end
     end
+    */
   end
 endtask
 
@@ -2283,7 +2281,7 @@ task timeout_error_seq2::body;
     assert (req.randomize() with {
       wb_addr_i == 1;  //ier
       wb_we_i == 1;
-      wb_dat_i == 8'b0000_0100;  //IER[2]: set -> enable lsr
+      wb_dat_i == 8'b0000_0101;  //IER[2]: set -> enable lsr
     });
     `uvm_info(get_type_name, "configuring ier", UVM_LOW)
     `uvm_info(get_type_name, $sformatf("printing from sequence \n %s", req.sprint()), UVM_HIGH)
@@ -2291,7 +2289,7 @@ task timeout_error_seq2::body;
     `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW);
 
     //////////////////////////////write via thr//////////////////////////
-    repeat (8) begin
+    /* repeat (8) begin
       start_item(req);
       `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)
       assert (req.randomize() with {
@@ -2304,7 +2302,7 @@ task timeout_error_seq2::body;
       finish_item(req);
       `uvm_info(get_type_name, "finish_item unblocked", UVM_LOW)
     end
-
+*/
     //////////////////////////read iir/////////////////////////////////
     start_item(req);
     `uvm_info(get_type_name, "start_item unblocked", UVM_LOW)

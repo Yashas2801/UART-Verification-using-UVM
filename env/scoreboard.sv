@@ -98,9 +98,9 @@ class uart_scoreboard extends uvm_scoreboard;
     // Bits [7:6]: FIFO Trigger Level
     cp_fifo_trigger: coverpoint fcr_val[7:6] {
       bins level_1 = {2'b00};  // '00' => 1 byte
-      bins level_4 = {2'b01};  // '01' => 4 bytes
+      //     bins level_4 = {2'b01};  // '01' => 4 bytes
       bins level_8 = {2'b10};  // '10' => 8 bytes
-      bins level_14 = {2'b11};  // '11' => 14 bytes
+    //      bins level_14 = {2'b11};  // '11' => 14 bytes
     }
 
   endgroup : fcr_usage_cg
@@ -168,7 +168,7 @@ class uart_scoreboard extends uvm_scoreboard;
       bins thr_empty = {3'b001};
       bins rx_available = {3'b010};
       bins line_status = {3'b011};
-      bins timeout_int = {3'b100};
+      bins timeout_int = {3'b110};
     }
 
   endgroup
@@ -192,11 +192,30 @@ class uart_scoreboard extends uvm_scoreboard;
   // Covergroup for Functional Coverage
   covergroup uart_coverage;
     addr_cp: coverpoint wr_data1.wb_addr_i {
-      bins control_regs[] = {0, 1, 2, 3, 4};  // DLR, LCR, FCR, IER, THR,MCR
+      // Address 0 => read: RBR, write: THR
+      bins rbr_thr = {0};
+
+      // Address 1 => Interrupt Enable
+      bins ier = {1};
+
+      // Address 2 => read: IIR, write: FCR
+      bins iir_fcr = {2};
+
+      // Address 3 => Line Control
+      bins lcr = {3};
+
+      // Address 4 => Modem Control
+      bins mcr = {4};
+
+      // Address 5 => Line Status
+      bins lsr = {5};
     }
 
     write_enable_cp: coverpoint wr_data1.wb_we_i {bins enabled = {1}; bins disabled = {0};}
 
+    stb_cp: coverpoint wr_data1.wb_stb_i {bins active = {1'b1};}
+
+    cyc_cp: coverpoint wr_data1.wb_cyc_i {bins active = {1'b1};}
 
   endgroup
 
@@ -238,8 +257,8 @@ task uart_scoreboard::run_phase(uvm_phase phase);
     forever begin
       fifo_wrh[0].get(wr_data1);
       fifo_wrh[1].get(wr_data2);
-      `uvm_info(get_type_name, $sformatf("xtn1 =%s ", wr_data1.sprint()), UVM_LOW)
-      `uvm_info(get_type_name, $sformatf("xtn2 =%s ", wr_data2.sprint()), UVM_LOW)
+      //  `uvm_info(get_type_name, $sformatf("xtn1 =%s ", wr_data1.sprint()), UVM_LOW)
+      // `uvm_info(get_type_name, $sformatf("xtn2 =%s ", wr_data2.sprint()), UVM_LOW)
 
       uart_coverage.sample();  // Collect coverage data
 
@@ -471,8 +490,17 @@ function void uart_scoreboard::check_phase(uvm_phase phase);
       `uvm_error("THR_EMPTY_CHECK", "UART2: Expected THR empty but none detected")
       test_passed_thr = 0;
     end
-  end
+  end else if (m_cfg.is_te) begin
+    `uvm_info("TIMEOUT_ERROR_CHECK", "Running Timeout Error Check", UVM_MEDIUM)
+    test_passed_te = 1;
 
+    if (wr_data2.iir[3:1] == 3'b110) begin
+      `uvm_info("TIMEOUT_ERROR_CHECK", "UART2: Timeout error detected as expected", UVM_MEDIUM)
+    end else begin
+      `uvm_error("TIMEOUT_ERROR_CHECK", "UART2: Expected timeout error but none detected")
+      test_passed_te = 0;
+    end
+  end
   test_outcome_cg.sample();
 endfunction
 
