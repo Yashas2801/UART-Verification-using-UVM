@@ -243,7 +243,6 @@ task uart_scoreboard::run_phase(uvm_phase phase);
 
       uart_coverage.sample();  // Collect coverage data
 
-      // Sample LCR coverage from wr_data1, if conditions met
       if ((wr_data1.wb_addr_i == 3) &&
           (wr_data1.wb_we_i == 1)   &&
           (wr_data1.wb_stb_i == 1)  &&
@@ -254,7 +253,6 @@ task uart_scoreboard::run_phase(uvm_phase phase);
         lcr_usage_cg.sample();
       end
 
-      // Also sample LCR coverage from wr_data2, if conditions met
       if ((wr_data2.wb_addr_i == 3) &&
           (wr_data2.wb_we_i == 1)   &&
           (wr_data2.wb_stb_i == 1)  &&
@@ -271,7 +269,7 @@ task uart_scoreboard::run_phase(uvm_phase phase);
           (wr_data1.wb_cyc_i == 1)) begin
 
         ier_val = wr_data1.ier;
-        ier_usage_cg.sample();  // sample coverage for bits 0..2
+        ier_usage_cg.sample();
       end
 
       if ((wr_data2.wb_addr_i == 1) &&
