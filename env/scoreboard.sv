@@ -15,6 +15,111 @@ class uart_scoreboard extends uvm_scoreboard;
   bit test_passed_te;
   bit test_passed_thr;
 
+  /////////////////////coverage lcr////////////
+  //
+  bit [7:0] lcr_val;
+  covergroup lcr_usage_cg;
+    option.per_instance = 1;
+
+    // Word Length bits [1:0]
+    cp_word_length: coverpoint lcr_val[1:0] {
+      bins default_val = {0};  // 2'b00 => 5 bits
+      bins used_vals = {[1 : 3]};  // covers 2'b01, 2'b10, 2'b11
+    }
+
+    // Stop bit (bit 2)
+    cp_stop_bit: coverpoint lcr_val[2] {
+      bins default_val = {1'b0};  // one stop bit
+      bins used_val = {1'b1};  // two stop bits
+    }
+
+    // Parity Enable (bit 3)
+    cp_parity_en: coverpoint lcr_val[3] {
+      bins default_val = {1'b0}; bins used_val = {1'b1};
+    }
+
+    // Even Parity (bit 4)
+    cp_even_parity: coverpoint lcr_val[4] {
+      bins default_val = {1'b0}; bins used_val = {1'b1};
+    }
+
+    // Skip bit 5 (Stick Parity) intentionally
+
+    // Break Control (bit 6)
+    cp_break_ctrl: coverpoint lcr_val[6] {
+      bins default_val = {1'b0}; bins used_val = {1'b1};
+    }
+
+    // Divisor Latch Access (bit 7)
+    cp_dlab: coverpoint lcr_val[7] {
+      bins default_val = {1'b0}; bins used_val = {1'b1};
+    }
+  endgroup : lcr_usage_cg
+  ///////////////////////////////////////////////////////////////
+
+  /////////////////////coverage ier/////////////////////////////
+  bit [7:0] ier_val;
+  covergroup ier_usage_cg;
+    option.per_instance = 1;
+
+    // Bit 0: Received Data Available Interrupt Enable
+    cp_rda_ie: coverpoint ier_val[0] {
+      bins disabled = {1'b0}; bins enabled = {1'b1};
+    }
+
+    // Bit 1: Transmitter Holding Register Empty Interrupt Enable
+    cp_thre_ie: coverpoint ier_val[1] {
+      bins disabled = {1'b0}; bins enabled = {1'b1};
+    }
+
+    // Bit 2: Receiver Line Status Interrupt Enable
+    cp_lsr_ie: coverpoint ier_val[2] {
+      bins disabled = {1'b0}; bins enabled = {1'b1};
+    }
+
+  endgroup : ier_usage_cg
+  //////////////////////////////////////////////////////////////
+
+
+  //////////////////////////cg fcr/////////////////////////////
+  bit [7:0] fcr_val;
+  covergroup fcr_usage_cg;
+    option.per_instance = 1;
+
+    // Bit 1: RX FIFO reset
+    cp_rx_fifo_reset: coverpoint fcr_val[1] {
+      bins reset = {1'b1};
+    }
+
+    // Bit 2: TX FIFO reset
+    cp_tx_fifo_reset: coverpoint fcr_val[2] {
+      bins reset = {1'b1};
+    }
+
+    // Bits [7:6]: FIFO Trigger Level
+    cp_fifo_trigger: coverpoint fcr_val[7:6] {
+      bins level_1 = {2'b00};  // '00' => 1 byte
+      bins level_4 = {2'b01};  // '01' => 4 bytes
+      bins level_8 = {2'b10};  // '10' => 8 bytes
+      bins level_14 = {2'b11};  // '11' => 14 bytes
+    }
+
+  endgroup : fcr_usage_cg
+
+  /////////////////////////////////////////////////////////////
+  //NOTE: MCR coverage
+
+  bit [7:0] mcr_val;
+  covergroup mcr_usage_cg;
+    option.per_instance = 1;
+
+    // Bit 4: Loopback Mode
+    cp_loopback: coverpoint mcr_val[4] {
+      bins loopback = {1'b1};  // 1 => loopback mode
+    }
+
+  endgroup : mcr_usage_cg
+
   // Covergroup to track outcome flags
   covergroup test_outcome_cg;
     // For each flag, we create a coverpoint with two bins: pass (1) and fail (0)
@@ -38,10 +143,6 @@ class uart_scoreboard extends uvm_scoreboard;
 
     write_enable_cp: coverpoint wr_data1.wb_we_i {bins enabled = {1}; bins disabled = {0};}
 
-    strobe_cp: coverpoint wr_data1.wb_stb_i {bins active = {1}; bins inactive = {0};}
-
-    cycle_cp: coverpoint wr_data1.wb_cyc_i {bins active = {1}; bins inactive = {0};}
-
 
   endgroup
 
@@ -55,7 +156,11 @@ endclass
 function uart_scoreboard::new(string name, uvm_component parent);
   super.new(name, parent);
   test_outcome_cg = new();
-  uart_coverage   = new();
+  uart_coverage = new();
+  lcr_usage_cg = new();
+  ier_usage_cg = new();
+  fcr_usage_cg = new();
+  mcr_usage_cg = new();
 endfunction
 
 function void uart_scoreboard::build_phase(uvm_phase phase);
@@ -77,10 +182,88 @@ task uart_scoreboard::run_phase(uvm_phase phase);
     forever begin
       fifo_wrh[0].get(wr_data1);
       fifo_wrh[1].get(wr_data2);
-      //      `uvm_info(get_type_name, $sformatf("xtn1 =%s ", wr_data1.sprint()), UVM_LOW)
-      //     `uvm_info(get_type_name, $sformatf("xtn2 =%s ", wr_data2.sprint()), UVM_LOW)
+      `uvm_info(get_type_name, $sformatf("xtn1 =%s ", wr_data1.sprint()), UVM_LOW)
+      `uvm_info(get_type_name, $sformatf("xtn2 =%s ", wr_data2.sprint()), UVM_LOW)
 
       uart_coverage.sample();  // Collect coverage data
+
+      // Sample LCR coverage from wr_data1, if conditions met
+      if ((wr_data1.wb_addr_i == 3) &&
+          (wr_data1.wb_we_i == 1)   &&
+          (wr_data1.wb_stb_i == 1)  &&
+          (wr_data1.wb_cyc_i == 1)) begin
+        //`uvm_info("SCOREBOARD_DEBUG", $sformatf(
+        //         "Sampling LCR coverage with wr_data1=0x%0h", wr_data1.wb_dat_i), UVM_LOW);
+        lcr_val = wr_data1.wb_dat_i;
+        lcr_usage_cg.sample();
+      end
+
+      // Also sample LCR coverage from wr_data2, if conditions met
+      if ((wr_data2.wb_addr_i == 3) &&
+          (wr_data2.wb_we_i == 1)   &&
+          (wr_data2.wb_stb_i == 1)  &&
+          (wr_data2.wb_cyc_i == 1)) begin
+        //`uvm_info("SCOREBOARD_DEBUG", $sformatf(
+        //         "Sampling LCR coverage with wr_data2=0x%0h", wr_data2.wb_dat_i), UVM_LOW);
+        lcr_val = wr_data2.wb_dat_i;
+        lcr_usage_cg.sample();
+      end
+      //NOTE: ier sample
+      if ((wr_data1.wb_addr_i == 1) &&
+          (wr_data1.wb_we_i == 1)   &&
+          (wr_data1.wb_stb_i == 1)  &&
+          (wr_data1.wb_cyc_i == 1)) begin
+
+        ier_val = wr_data1.wb_dat_i;
+        ier_usage_cg.sample();  // sample coverage for bits 0..2
+      end
+
+      if ((wr_data2.wb_addr_i == 1) &&
+          (wr_data2.wb_we_i == 1)   &&
+          (wr_data2.wb_stb_i == 1)  &&
+          (wr_data2.wb_cyc_i == 1)) begin
+
+        ier_val = wr_data2.wb_dat_i;
+        ier_usage_cg.sample();
+      end
+
+      //NOTE:fcr sample
+
+      if ((wr_data1.wb_addr_i == 2) &&
+    (wr_data1.wb_we_i   == 1) &&
+    (wr_data1.wb_stb_i  == 1) &&
+    (wr_data1.wb_cyc_i  == 1)) begin
+        fcr_val = wr_data1.wb_dat_i;
+        fcr_usage_cg.sample();
+      end
+
+      if ((wr_data2.wb_addr_i == 2) &&
+    (wr_data2.wb_we_i   == 1) &&
+    (wr_data2.wb_stb_i  == 1) &&
+    (wr_data2.wb_cyc_i  == 1)) begin
+        fcr_val = wr_data2.wb_dat_i;
+        fcr_usage_cg.sample();
+      end
+
+      //NOTE: Mcr sample
+      if ((wr_data1.wb_addr_i == 4) &&
+    (wr_data1.wb_we_i   == 1) &&
+    (wr_data1.wb_stb_i  == 1) &&
+    (wr_data1.wb_cyc_i  == 1)) begin
+
+        mcr_val = wr_data1.wb_dat_i;
+        mcr_usage_cg.sample();
+      end
+
+      if ((wr_data2.wb_addr_i == 4) &&
+    (wr_data2.wb_we_i   == 1) &&
+    (wr_data2.wb_stb_i  == 1) &&
+    (wr_data2.wb_cyc_i  == 1)) begin
+
+        mcr_val = wr_data2.wb_dat_i;
+        mcr_usage_cg.sample();
+      end
+
 
     end
   join
