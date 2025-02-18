@@ -48,6 +48,7 @@ function void UART_env::connect_phase(uvm_phase phase);
 
   for (int i = 0; i < e_cfg.no_of_agents; i++) begin
     vseqrh.seqrh[i] = agth[i].seqrh;
+    agth[i].drvh.iir_port.connect(sb.iir_export);
     agth[i].monh.ana_port.connect(sb.fifo_wrh[i].analysis_export);
   end
 

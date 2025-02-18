@@ -4,6 +4,8 @@ class UART_driver extends uvm_driver #(UART_xtn);
   virtual uart_if vif;
   agent_config a_cfg;
 
+  uvm_analysis_port #(bit [7:0]) iir_port;
+
   extern function new(string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
   extern function void connect_phase(uvm_phase phase);
@@ -13,6 +15,7 @@ endclass
 
 function UART_driver::new(string name, uvm_component parent);
   super.new(name, parent);
+  iir_port = new("iir_port", this);
 endfunction
 
 function void UART_driver::build_phase(uvm_phase phase);
@@ -64,6 +67,7 @@ task UART_driver::drive_task(UART_xtn xtn);
 
     xtn.iir = vif.wr_cb.wb_dat_o;
     $display("the value of iir is :%b ", vif.wr_cb.wb_dat_o);
+    iir_port.write(xtn.iir);
     seq_item_port.put_response(xtn);
   end
 endtask

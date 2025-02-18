@@ -1,9 +1,11 @@
 class uart_scoreboard extends uvm_scoreboard;
   `uvm_component_utils(uart_scoreboard)
 
+  uvm_analysis_imp #(bit [7:0], uart_scoreboard) iir_export;
   uvm_tlm_analysis_fifo #(UART_xtn) fifo_wrh[];
   UART_xtn wr_data1, wr_data2;
   env_config m_cfg;
+
   // Outcome flags for each test mode
   bit test_passed_fd;
   bit test_passed_hd;
@@ -159,7 +161,14 @@ class uart_scoreboard extends uvm_scoreboard;
   ////////////////////////////////////////////////////
 
   ///////////////////////////////////iir cg////////////////////
+
   bit [7:0] iir_val;
+
+  function void write(bit [7:0] iir_value);
+    iir_val = iir_value;
+    iir_coverage_cg.sample();
+    `uvm_info(get_type_name, $sformatf("Scoreboard received IIR value:%0b", iir_value), UVM_LOW)
+  endfunction
 
   covergroup iir_coverage_cg;
     option.per_instance = 1;
@@ -236,6 +245,7 @@ function uart_scoreboard::new(string name, uvm_component parent);
   mcr_usage_cg = new();
   lsr_coverage_cg = new();
   iir_coverage_cg = new();
+  iir_export = new("iir_export", this);
 endfunction
 
 function void uart_scoreboard::build_phase(uvm_phase phase);
@@ -351,23 +361,6 @@ task uart_scoreboard::run_phase(uvm_phase phase);
           (wr_data2.wb_cyc_i  == 1)) begin
         lsr_val = wr_data2.lsr;
         lsr_coverage_cg.sample();
-      end
-
-      //NOTE: IIR sample
-      if ((wr_data1.wb_addr_i == 2) && (wr_data1.wb_we_i == 0) &&  // read
-          (wr_data1.wb_stb_i == 1) && (wr_data1.wb_cyc_i == 1)) begin
-
-        iir_val = wr_data1.iir;
-        iir_coverage_cg.sample();
-      end
-
-      if ((wr_data2.wb_addr_i == 2) &&
-    (wr_data2.wb_we_i   == 0)        &&
-    (wr_data2.wb_stb_i  == 1)        &&
-    (wr_data2.wb_cyc_i  == 1)) begin
-
-        iir_val = wr_data2.iir;
-        iir_coverage_cg.sample();
       end
 
     end
