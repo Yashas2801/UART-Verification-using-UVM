@@ -10,7 +10,7 @@ This project demonstrates the verification of a UART (Universal Asynchronous Rec
 
 ## Architecture
 
-![UART Architecture](https://github.com/Yashas2801/UART-Verification-using-UVM/blob/4e7f74997dd6b583e0ff33cff55226169586fa21/Arch.png)
+![UART Architecture](https://github.com/Yashas2801/UART-Verification-using-UVM/blob/2db26034a1637ebef31405a22262d1342b0a5195/Arch.png)
 
 ## Directory Structure
 
