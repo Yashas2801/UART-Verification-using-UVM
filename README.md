@@ -8,6 +8,47 @@ This project demonstrates the verification of a UART (Universal Asynchronous Rec
 - **Coverage**: Functional coverage to ensure all possible UART states and transitions are exercised.
 - **Simulation**: Run on QuestaSim, with detailed logs and waveform analysis.
 
+## UART Frame Structure (8N1 with Optional Parity)
+
+A UART frame consists of:
+  • **A Start Bit** – Always `0` (low), indicating the beginning of a frame.
+  • **8 Data Bits** – Transmitted **LSB (least significant bit) first**.
+  • **An Optional Parity Bit** – May be included for error checking.
+  • **A Stop Bit** – Always `1` (high), indicating the end of a frame.
+
+### **Frame Diagram:**
+```
+   +---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+
+   |  Start  |  Data0  |  Data1  |  Data2  |  Data3  |  Data4  |  Data5  |  Data6  |  Data7  | Parity  |  Stop   |
+   |  (0)    |         |         |         |         |         |         |         |         | Optional|  (1)    |
+   +---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+
+```
+
+### **Timing Diagram Example:**
+```
+         Clock Signal -->
+         __    __    __    __    __    __    __    __    __    __    __    __
+clk:  _/  \__/  \__/  \__/  \__/  \__/  \__/  \__/  \__/  \__/  \__/  \__
+
+         Bit Periods -->
+         +---+-------+-------+-------+-------+-------+-------+-------+-------+---------+---+
+         | 0 |  D0   |  D1   |  D2   |  D3   |  D4   |  D5   |  D6   |  D7   | Parity  | 1 |
+         +---+-------+-------+-------+-------+-------+-------+-------+-------+---------+---+
+           ^      ^       ^       ^       ^       ^       ^       ^       ^         ^
+           |      |       |       |       |       |       |       |       |         |
+         Start  Data   Data    Data    Data    Data    Data    Data    Data   Optional  Stop
+          Bit   Bit0   Bit1    Bit2    Bit3    Bit4    Bit5    Bit6    Bit7   Parity Bit
+```
+
+### **Explanation:**
+- The transmission begins with a **low (`0`) start bit**.
+- **Eight data bits** follow, starting with **Data0 (LSB)** and ending with **Data7 (MSB)**.
+- An **optional parity bit** may be transmitted after the data bits to assist with **error checking**.
+- The frame ends with a **high (`1`) stop bit**.
+- The **clock signal** shown on top illustrates the **bit timing**, where each clock cycle corresponds to **one bit period**.
+
+This clear structure ensures proper **synchronization and error checking** in **UART communications** and can be modeled in your **UVM verification environment**.
+
 ## Architecture
 
 ![UART Architecture](https://github.com/Yashas2801/UART-Verification-using-UVM/blob/1063f55ba8383ab977bc193d106ea2305c672b41/arch1.png)
