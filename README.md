@@ -29,7 +29,6 @@ This project demonstrates the verification of a UART (Universal Asynchronous Rec
 │   ├── scoreboard.sv
 │   ├── virtual_sequencer.sv
 │   └── virtual_sequence.sv
-├── README.md
 ├── rtl
 ├── sim
 │   └── Makefile
