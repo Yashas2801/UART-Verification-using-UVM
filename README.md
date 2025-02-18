@@ -47,8 +47,6 @@ clk:  _/  \__/  \__/  \__/  \__/  \__/  \__/  \__/  \__/  \__/  \__/  \__
 - The frame ends with a **high (`1`) stop bit**.
 - The **clock signal** shown on top illustrates the **bit timing**, where each clock cycle corresponds to **one bit period**.
 
-This clear structure ensures proper **synchronization and error checking** in **UART communications** and can be modeled in your **UVM verification environment**.
-
 ## Architecture
 
 ![UART Architecture](https://github.com/Yashas2801/UART-Verification-using-UVM/blob/1063f55ba8383ab977bc193d106ea2305c672b41/arch1.png)
