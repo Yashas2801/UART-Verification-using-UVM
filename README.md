@@ -27,7 +27,7 @@ A UART frame consists of:
 ### **Timing Diagram Example:**
 ```
          Clock Signal -->
-         __    __    __    __    __    __    __    __    __    __    __    __
+        __    __    __    __    __    __    __    __    __    __    __    
 clk:  _/  \__/  \__/  \__/  \__/  \__/  \__/  \__/  \__/  \__/  \__/  \__
 
          Bit Periods -->
