@@ -16,19 +16,12 @@ A UART frame consists of:
   • **An Optional Parity Bit** – May be included for error checking.
   • **A Stop Bit** – Always `1` (high), indicating the end of a frame.
 
-### **Frame Diagram:**
-```
-   +---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+
-   |  Start  |  Data0  |  Data1  |  Data2  |  Data3  |  Data4  |  Data5  |  Data6  |  Data7  | Parity  |  Stop   |
-   |  (0)    |         |         |         |         |         |         |         |         | Optional|  (1)    |
-   +---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+
-```
 
-### **Timing Diagram Example:**
+### **UART Frame:**
 ```
          Clock Signal -->
-        __    __    __    __    __    __    __    __    __    __    __    
-clk:  _/  \__/  \__/  \__/  \__/  \__/  \__/  \__/  \__/  \__/  \__/  \__
+            __    __    __    __    __    __    __    __    __    __    __    __    __    __ 
+    clk:  _/  \__/  \__/  \__/  \__/  \__/  \__/  \__/  \__/  \__/  \__/  \__/  \__/  \__/  \
 
          Bit Periods -->
          +---+-------+-------+-------+-------+-------+-------+-------+-------+---------+---+
@@ -49,7 +42,7 @@ clk:  _/  \__/  \__/  \__/  \__/  \__/  \__/  \__/  \__/  \__/  \__/  \__
 
 ## Architecture
 
-![UART Architecture](https://github.com/Yashas2801/UART-Verification-using-UVM/blob/1063f55ba8383ab977bc193d106ea2305c672b41/arch1.png)
+![UART Architecture](https://github.com/Yashas2801/UART-Verification-using-UVM/blob/45b1b1e9073b5b8ff32dab1dc6a7c61f4083cd68/arch.png)
 
 ## Directory Structure
 
