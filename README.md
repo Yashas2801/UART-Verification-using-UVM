@@ -16,7 +16,6 @@ A UART frame consists of:
   • **An Optional Parity Bit** – May be included for error checking.
   • **A Stop Bit** – Always `1` (high), indicating the end of a frame.
 
-
 ### **UART Frame:**
 ```
          Clock Signal -->
@@ -78,7 +77,7 @@ A UART frame consists of:
 #### Tip - Run this command to see available Makefile options:
 
 ```sh
-cd sim 
+cd sim
 make help
 ```
 
@@ -123,6 +122,51 @@ In the Makefile, fixed seed numbers are used for some test cases. However, these
 2. Run each test case and note the seed number generated.
 3. If required, use the noted seed number for reproducibility in future runs.
 
+### Running the Simulation Using the Python Script
+
+<details>
+  <summary>Click to expand</summary>
+
+You can automate compilation, running tests, and generating coverage reports using the **sim.py** script:
+
+- **Compile the RTL and UVM Testbench**:
+
+```sh
+python sim.py sv_cmp
+```
+
+- **Run a specific test** (e.g., `base_test`):
+
+```sh
+python sim.py run_test
+```
+
+- **Run all tests sequentially and merge coverage**:
+
+```sh
+python sim.py regress
+```
+
+- **View a waveform** after running a test (e.g., for `base_test`):
+
+```sh
+python sim.py view_wave1
+```
+
+- **Generate a coverage report**:
+
+```sh
+python sim.py report
+```
+
+For additional commands:
+
+```sh
+python sim.py help
+```
+
+</details>
+
 ## Scoreboard Overview
 
 The **UART scoreboard** is responsible for checking the correctness of transactions received by the monitor. It compares transmitted and received data to ensure compliance with expected results. The scoreboard also includes functional coverage to track test outcomes and key protocol events.
@@ -160,5 +204,4 @@ For a more detailed specification, refer to the [**UART16550 Core Technical Manu
 ---
 
 This project aims to ensure the UART design is thoroughly verified and functions reliably across different scenarios using UVM.
-
 
