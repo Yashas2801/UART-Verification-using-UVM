@@ -47,12 +47,14 @@ task UART_monitor::monitor();
   `uvm_info(get_type_name, "Monitor task enabled", UVM_LOW)
   @(vif.wr_mon_cb);
   wait (vif.wr_mon_cb.wb_ack_o);
-  xtn.wb_rst_i  = vif.wr_mon_cb.wb_rst_i;
-  xtn.wb_stb_i  = vif.wr_mon_cb.wb_stb_i;
-  xtn.wb_cyc_i  = vif.wr_mon_cb.wb_cyc_i;
+  xtn.wb_rst_i = vif.wr_mon_cb.wb_rst_i;
+  xtn.wb_stb_i = vif.wr_mon_cb.wb_stb_i;
+  xtn.wb_cyc_i = vif.wr_mon_cb.wb_cyc_i;
   xtn.wb_addr_i = vif.wr_mon_cb.wb_addr_i;
-  xtn.wb_dat_i  = vif.wr_mon_cb.wb_dat_i;
-  xtn.wb_we_i   = vif.wr_mon_cb.wb_we_i;
+  xtn.wb_dat_i = vif.wr_mon_cb.wb_dat_i;
+  xtn.wb_we_i = vif.wr_mon_cb.wb_we_i;
+  xtn.int_o = vif.wr_mon_cb.int_o;
+  xtn.wb_dat_o = vif.wr_mon_cb.wb_dat_o;
 
   //NOTE: read buffer
   if (xtn.wb_addr_i == 0 && xtn.wb_we_i == 0 && xtn.lcr[7] == 0)

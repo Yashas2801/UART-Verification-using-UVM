@@ -6,7 +6,7 @@ interface uart_if (
 );
 
   logic [4:0] wb_addr_i;  // Wishbone address input
-  logic [31:0] wb_dat_i, wb_dat_o;  // Wishbone data input/output
+  logic [7:0] wb_dat_i, wb_dat_o;  // Wishbone data input/output
   bit [3:0] wb_sel_i;  // Wishbone select input
   bit wb_we_i, wb_stb_i, wb_cyc_i;  // Wishbone control signals
   bit   wb_ack_o;  // Wishbone acknowledge output

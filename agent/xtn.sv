@@ -8,6 +8,8 @@ class UART_xtn extends uvm_sequence_item;
   rand logic wb_cyc_i;
   rand logic wb_sel_i;
   logic wb_rst_i;
+  bit int_o;
+  bit wb_dat_o;
 
   bit [7:0] ier;  // INTERRUPT_ENABLE_REGISTER
   bit [7:0] iir;  // INTERRUPT_IDENTIFICATION_REGISTER
