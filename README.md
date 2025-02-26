@@ -125,7 +125,7 @@ In the Makefile, fixed seed numbers are used for some test cases. However, these
 ### Running the Simulation Using the Python Script
 
 <details>
-  <summary>Click to expand</summary>
+  <summary>Find out how !!</summary>
 
 You can automate compilation, running tests, and generating coverage reports using the **sim.py** script:
 
